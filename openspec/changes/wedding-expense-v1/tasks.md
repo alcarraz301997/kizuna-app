@@ -34,19 +34,19 @@ Chain strategy: stacked-to-main
 
 ## Phase 2: Domain Foundation
 
-- [ ] 2.1 Create `ExpenseStatus` enum. (`app/Enums/ExpenseStatus.php`, 1.1, S, cases match spec)
-- [ ] 2.2 Create categories migration. (`database/migrations/*_create_categories_table.php`, 1.4, S, schema matches design)
-- [ ] 2.3 Create expenses migration. (`database/migrations/*_create_expenses_table.php`, 2.2, S, FK restricts delete)
-- [ ] 2.4 Create `Category` model. (`app/Models/Category.php`, 2.2 2.1, M, accessors match spec)
-- [ ] 2.5 Create `Expense` model. (`app/Models/Expense.php`, 2.3 2.1, S, casts work)
-- [ ] 2.6 Add relations to `User`. (`app/Models/User.php`, 2.4 2.5, S, relations scoped)
+- [x] 2.1 Create `ExpenseStatus` enum. (`app/Enums/ExpenseStatus.php`, 1.1, S, cases match spec)
+- [x] 2.2 Create categories migration. (`database/migrations/*_create_categories_table.php`, 1.4, S, schema matches design)
+- [x] 2.3 Create expenses migration. (`database/migrations/*_create_expenses_table.php`, 2.2, S, FK restricts delete)
+- [x] 2.4 Create `Category` model. (`app/Models/Category.php`, 2.2 2.1, M, accessors match spec)
+- [x] 2.5 Create `Expense` model. (`app/Models/Expense.php`, 2.3 2.1, S, casts work)
+- [x] 2.6 Add relations to `User`. (`app/Models/User.php`, 2.4 2.5, S, relations scoped)
 
 ## Phase 3: Category CRUD
 
-- [ ] 3.1 Implement `CategoryController`. (`app/Http/Controllers/CategoryController.php`, 2.4 2.6, M, CRUD + delete block pass)
-- [ ] 3.2 Register category routes. (`routes/web.php`, 3.1, S, routes listed)
-- [ ] 3.3 Build category Inertia pages. (`resources/js/Pages/Categories/{Index,Create,Edit}.jsx`, 3.2, M, pages work)
-- [ ] 3.4 Write category tests. (`tests/Feature/CategoryTest.php`, 3.1, M, pass)
+- [x] 3.1 Implement `CategoryController`. (`app/Http/Controllers/CategoryController.php`, 2.4 2.6, M, CRUD + delete block pass)
+- [x] 3.2 Register category routes. (`routes/web.php`, 3.1, S, routes listed)
+- [x] 3.3 Build category Inertia pages. (`resources/js/Pages/Categories/{Index,Create,Edit}.jsx`, 3.2, M, pages work)
+- [x] 3.4 Write category tests. (`tests/Feature/CategoryTest.php`, 3.1, M, pass)
 
 ## Phase 4: Expense CRUD & Dashboard
 
