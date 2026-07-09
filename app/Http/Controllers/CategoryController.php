@@ -18,6 +18,7 @@ class CategoryController extends Controller
     {
         $categories = $request->user()->categories()
             ->withSum(['expenses as spent' => fn ($q) => $q->whereIn('status', ['contracted', 'paid'])], 'amount')
+            ->withCount('expenses')
             ->orderBy('name')
             ->get()
             ->map(fn (Category $c) => [
@@ -27,7 +28,7 @@ class CategoryController extends Controller
                 'color' => $c->color,
                 'spent' => (float) ($c->spent ?? 0),
                 'remaining' => (float) $c->budget_limit - (float) ($c->spent ?? 0),
-                'expenses_count' => $c->expenses()->count(),
+                'expenses_count' => $c->expenses_count,
             ]);
 
         return Inertia::render('Categories/Index', [

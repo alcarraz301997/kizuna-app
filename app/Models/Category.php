@@ -40,6 +40,12 @@ class Category extends Model
      */
     public function getSpentAttribute(): float
     {
+        if ($this->relationLoaded('expenses')) {
+            return (float) $this->expenses
+                ->filter(fn ($e) => in_array($e->status->value ?? $e->status, ['contracted', 'paid']))
+                ->sum('amount');
+        }
+
         return (float) $this->expenses()
             ->whereIn('status', ['contracted', 'paid'])
             ->sum('amount');
@@ -50,6 +56,12 @@ class Category extends Model
      */
     public function getPlannedAttribute(): float
     {
+        if ($this->relationLoaded('expenses')) {
+            return (float) $this->expenses
+                ->filter(fn ($e) => ($e->status->value ?? $e->status) === 'planned')
+                ->sum('amount');
+        }
+
         return (float) $this->expenses()
             ->where('status', 'planned')
             ->sum('amount');
