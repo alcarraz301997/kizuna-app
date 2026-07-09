@@ -103,7 +103,7 @@ class CategoryController extends Controller
 
         if ($category->expenses()->exists()) {
             return Redirect::route('categories.index')
-                ->with('error', 'Cannot delete category with existing expenses. Remove or reassign expenses first.');
+                ->with('error', 'No se puede eliminar una categoría con gastos existentes. Elimina o reasigna los gastos primero.');
         }
 
         $category->delete();

@@ -1,44 +1,42 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatCurrency } from '@/utils/formatCurrency';
 import { Head } from '@inertiajs/react';
 
 export default function Dashboard({ categories, totals }) {
-    const formatCurrency = (value) =>
-        '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
     return (
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard
+                    Panel
                 </h2>
             }
         >
-            <Head title="Dashboard" />
+            <Head title="Panel" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Summary Cards */}
                     <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">Total Budget</p>
+                            <p className="text-sm font-medium text-gray-500">Presupuesto Total</p>
                             <p className="mt-2 text-2xl font-bold text-gray-900">
                                 {formatCurrency(totals.total_budget)}
                             </p>
                         </div>
                         <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">Total Spent</p>
+                            <p className="text-sm font-medium text-gray-500">Total Gastado</p>
                             <p className="mt-2 text-2xl font-bold text-red-600">
                                 {formatCurrency(totals.total_spent)}
                             </p>
                         </div>
                         <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">Planned</p>
+                            <p className="text-sm font-medium text-gray-500">Planeado</p>
                             <p className="mt-2 text-2xl font-bold text-yellow-600">
                                 {formatCurrency(totals.total_planned)}
                             </p>
                         </div>
                         <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">Remaining</p>
+                            <p className="text-sm font-medium text-gray-500">Restante</p>
                             <p className={`mt-2 text-2xl font-bold ${totals.total_remaining < 0 ? 'text-red-600' : 'text-green-600'}`}>
                                 {formatCurrency(totals.total_remaining)}
                             </p>
@@ -49,11 +47,11 @@ export default function Dashboard({ categories, totals }) {
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6">
                             <h3 className="mb-4 text-lg font-medium text-gray-900">
-                                Category Breakdown
+                                Desglose por Categoría
                             </h3>
                             {categories.length === 0 ? (
                                 <p className="text-center text-gray-500">
-                                    No categories yet. Create categories to see budget progress.
+                                    Aún no hay categorías. Crea categorías para ver el progreso del presupuesto.
                                 </p>
                             ) : (
                                 <div className="space-y-6">
@@ -84,9 +82,9 @@ export default function Dashboard({ categories, totals }) {
                                             </div>
                                             <div className="mt-1 flex justify-between text-xs text-gray-500">
                                                 <span>
-                                                    Remaining: <span className={category.remaining < 0 ? 'font-semibold text-red-600' : ''}>{formatCurrency(category.remaining)}</span>
+                                                    Restante: <span className={category.remaining < 0 ? 'font-semibold text-red-600' : ''}>{formatCurrency(category.remaining)}</span>
                                                 </span>
-                                                <span>Planned: {formatCurrency(category.planned)}</span>
+                                                <span>Planeado: {formatCurrency(category.planned)}</span>
                                             </div>
                                         </div>
                                     ))}

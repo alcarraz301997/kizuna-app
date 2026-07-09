@@ -21,18 +21,18 @@ export default function Edit({ category }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Edit Category
+                    Editar Categoría
                 </h2>
             }
         >
-            <Head title="Edit Category" />
+            <Head title="Editar Categoría" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <form onSubmit={submit} className="max-w-xl space-y-6">
                             <div>
-                                <InputLabel htmlFor="name" value="Name" />
+                                <InputLabel htmlFor="name" value="Nombre" />
                                 <TextInput
                                     id="name"
                                     className="mt-1 block w-full"
@@ -46,7 +46,7 @@ export default function Edit({ category }) {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="budget_limit" value="Budget Limit" />
+                                <InputLabel htmlFor="budget_limit" value="Límite de Presupuesto" />
                                 <TextInput
                                     id="budget_limit"
                                     type="number"
@@ -57,6 +57,7 @@ export default function Edit({ category }) {
                                     onChange={(e) => setData('budget_limit', e.target.value)}
                                     required
                                     autoComplete="off"
+                                    placeholder="S/. 0.00"
                                 />
                                 <InputError className="mt-2" message={errors.budget_limit} />
                             </div>
@@ -83,13 +84,13 @@ export default function Edit({ category }) {
 
                             <div className="flex items-center gap-4">
                                 <PrimaryButton disabled={processing}>
-                                    Update Category
+                                    Actualizar Categoría
                                 </PrimaryButton>
                                 <Link
                                     href={route('categories.index')}
                                     className="text-sm text-gray-600 hover:text-gray-900"
                                 >
-                                    Cancel
+                                    Cancelar
                                 </Link>
                             </div>
                         </form>

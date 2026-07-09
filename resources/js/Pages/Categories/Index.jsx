@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DangerButton from '@/Components/DangerButton';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { formatCurrency } from '@/utils/formatCurrency';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 export default function Index({ categories }) {
@@ -8,7 +9,7 @@ export default function Index({ categories }) {
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
-        if (confirm('Are you sure you want to delete this category?')) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
             destroy(route('categories.destroy', id));
         }
     };
@@ -18,15 +19,15 @@ export default function Index({ categories }) {
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        Categories
+                        Categorías
                     </h2>
                     <Link href={route('categories.create')}>
-                        <PrimaryButton>Add Category</PrimaryButton>
+                        <PrimaryButton>Agregar Categoría</PrimaryButton>
                     </Link>
                 </div>
             }
         >
-            <Head title="Categories" />
+            <Head title="Categorías" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -40,12 +41,12 @@ export default function Index({ categories }) {
                         <div className="p-6">
                             {categories.length === 0 ? (
                                 <p className="text-center text-gray-500">
-                                    No categories yet.{' '}
+                                    Aún no hay categorías.{' '}
                                     <Link
                                         href={route('categories.create')}
                                         className="text-indigo-600 underline hover:text-indigo-900"
                                     >
-                                        Create one
+                                        Crea una
                                     </Link>
                                     .
                                 </p>
@@ -54,19 +55,19 @@ export default function Index({ categories }) {
                                     <thead>
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Category
+                                                Categoría
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Budget
+                                                Presupuesto
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Spent
+                                                Gastado
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Remaining
+                                                Restante
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Actions
+                                                Acciones
                                             </th>
                                         </tr>
                                     </thead>
@@ -85,13 +86,13 @@ export default function Index({ categories }) {
                                                     </div>
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right text-gray-900">
-                                                    ${parseFloat(category.budget_limit).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                    {formatCurrency(category.budget_limit)}
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right text-gray-900">
-                                                    ${category.spent.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                    {formatCurrency(category.spent)}
                                                 </td>
                                                 <td className={`whitespace-nowrap px-6 py-4 text-right ${category.remaining < 0 ? 'font-semibold text-red-600' : 'text-gray-900'}`}>
-                                                    ${category.remaining.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                    {formatCurrency(category.remaining)}
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">
@@ -99,13 +100,13 @@ export default function Index({ categories }) {
                                                             href={route('categories.edit', category.id)}
                                                             className="text-sm text-indigo-600 hover:text-indigo-900"
                                                         >
-                                                            Edit
+                                                            Editar
                                                         </Link>
                                                         <DangerButton
                                                             disabled={processing}
                                                             onClick={() => handleDelete(category.id)}
                                                         >
-                                                            Delete
+                                                            Eliminar
                                                         </DangerButton>
                                                     </div>
                                                 </td>

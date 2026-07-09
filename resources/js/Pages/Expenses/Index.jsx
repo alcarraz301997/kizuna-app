@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DangerButton from '@/Components/DangerButton';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { formatCurrency } from '@/utils/formatCurrency';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 const statusColors = {
@@ -9,12 +10,18 @@ const statusColors = {
     paid: 'bg-green-100 text-green-800',
 };
 
+const statusLabels = {
+    planned: 'Planeado',
+    contracted: 'Contratado',
+    paid: 'Pagado',
+};
+
 export default function Index({ expenses, categories, filters }) {
     const flash = usePage().props.flash;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
-        if (confirm('Are you sure you want to delete this expense?')) {
+        if (confirm('¿Estás seguro de que deseas eliminar este gasto?')) {
             destroy(route('expenses.destroy', id));
         }
     };
@@ -24,15 +31,15 @@ export default function Index({ expenses, categories, filters }) {
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                        Expenses
+                        Gastos
                     </h2>
                     <Link href={route('expenses.create')}>
-                        <PrimaryButton>Add Expense</PrimaryButton>
+                        <PrimaryButton>Agregar Gasto</PrimaryButton>
                     </Link>
                 </div>
             }
         >
-            <Head title="Expenses" />
+            <Head title="Gastos" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -57,7 +64,7 @@ export default function Index({ expenses, categories, filters }) {
                                 window.location.href = route('expenses.index') + (qs ? '?' + qs : '');
                             }}
                         >
-                            <option value="">All Categories</option>
+                            <option value="">Todas las categorías</option>
                             {categories.map((cat) => (
                                 <option key={cat.id} value={cat.id}>
                                     {cat.name}
@@ -70,12 +77,12 @@ export default function Index({ expenses, categories, filters }) {
                         <div className="p-6">
                             {expenses.length === 0 ? (
                                 <p className="text-center text-gray-500">
-                                    No expenses yet.{' '}
+                                    Aún no hay gastos.{' '}
                                     <Link
                                         href={route('expenses.create')}
                                         className="text-indigo-600 underline hover:text-indigo-900"
                                     >
-                                        Create one
+                                        Crea uno
                                     </Link>
                                     .
                                 </p>
@@ -84,22 +91,22 @@ export default function Index({ expenses, categories, filters }) {
                                     <thead>
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Vendor
+                                                Proveedor
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Category
+                                                Categoría
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Amount
+                                                Monto
                                             </th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Status
+                                                Estado
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Date
+                                                Fecha
                                             </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Actions
+                                                Acciones
                                             </th>
                                         </tr>
                                     </thead>
@@ -121,11 +128,11 @@ export default function Index({ expenses, categories, filters }) {
                                                     </div>
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                                                    ${expense.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                    {formatCurrency(expense.amount)}
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-center">
                                                     <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${statusColors[expense.status] || ''}`}>
-                                                        {expense.status}
+                                                        {statusLabels[expense.status] || expense.status}
                                                     </span>
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
@@ -137,13 +144,13 @@ export default function Index({ expenses, categories, filters }) {
                                                             href={route('expenses.edit', expense.id)}
                                                             className="text-sm text-indigo-600 hover:text-indigo-900"
                                                         >
-                                                            Edit
+                                                            Editar
                                                         </Link>
                                                         <DangerButton
                                                             disabled={processing}
                                                             onClick={() => handleDelete(expense.id)}
                                                         >
-                                                            Delete
+                                                            Eliminar
                                                         </DangerButton>
                                                     </div>
                                                 </td>
