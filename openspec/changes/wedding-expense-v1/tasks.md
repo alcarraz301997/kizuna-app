@@ -50,16 +50,16 @@ Chain strategy: stacked-to-main
 
 ## Phase 4: Expense CRUD & Dashboard
 
-- [ ] 4.1 Implement `ExpenseController`. (`app/Http/Controllers/ExpenseController.php`, 2.5 2.6 3.1, M, CRUD + filter works)
-- [ ] 4.2 Register expense routes. (`routes/web.php`, 4.1, S, routes listed)
-- [ ] 4.3 Build expense Inertia pages. (`resources/js/Pages/Expenses/{Index,Create,Edit}.jsx`, 4.2 3.3, M, forms work)
-- [ ] 4.4 Implement `DashboardController`. (`app/Http/Controllers/DashboardController.php`, 2.4 2.5, M, totals match spec)
-- [ ] 4.5 Build `Dashboard.jsx`. (`resources/js/Pages/Dashboard.jsx`, 4.4, M, renders summary)
-- [ ] 4.6 Update nav links. (`resources/js/Layouts/AuthenticatedLayout.jsx`, 3.3 4.3 4.5, S, links route)
-- [ ] 4.7 Write expense and dashboard tests. (`tests/Feature/{Expense,Dashboard}Test.php`, 4.1 4.4, M, pass)
+- [x] 4.1 Implement `ExpenseController`. (`app/Http/Controllers/ExpenseController.php`, 2.5 2.6 3.1, M, CRUD + filter works)
+- [x] 4.2 Register expense routes. (`routes/web.php`, 4.1, S, routes listed)
+- [x] 4.3 Build expense Inertia pages. (`resources/js/Pages/Expenses/{Index,Create,Edit}.jsx`, 4.2 3.3, M, forms work)
+- [x] 4.4 Implement `DashboardController`. (`app/Http/Controllers/DashboardController.php`, 2.4 2.5, M, totals match spec)
+- [x] 4.5 Build `Dashboard.jsx`. (`resources/js/Pages/Dashboard.jsx`, 4.4, M, renders summary)
+- [x] 4.6 Update nav links. (`resources/js/Layouts/AuthenticatedLayout.jsx`, 3.3 4.3 4.5, S, links route)
+- [x] 4.7 Write expense and dashboard tests. (`tests/Feature/{Expense,Dashboard}Test.php`, 4.1 4.4, M, pass)
 
 ## Phase 5: Unit Tests, Seeds & Polish
 
-- [ ] 5.1 Write unit tests. (`tests/Unit/{Category,ExpenseStatus}Test.php`, 2.4 2.1, S, unit tests pass)
-- [ ] 5.2 Create factories and seeder. (`database/factories/*`, `database/seeders/DatabaseSeeder.php`, 2.4 2.5, S, seed works)
-- [ ] 5.3 Run full verification. (—, all, S, `php artisan test && npm run test && npm run build` pass)
+- [x] 5.1 Write unit tests. (`tests/Unit/{Category,ExpenseStatus}Test.php`, 2.4 2.1, S, unit tests pass)
+- [x] 5.2 Create factories and seeder. (`database/factories/*`, `database/seeders/DatabaseSeeder.php`, 2.4 2.5, S, seed works)
+- [x] 5.3 Run full verification. (—, all, S, `php artisan test && npm run test && npm run build` pass)
