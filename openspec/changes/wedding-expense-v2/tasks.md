@@ -72,7 +72,7 @@ Chain strategy: feature-branch-chain
 
 ## PR 4: Integración y Verificación
 
-- [ ] 4.1 Modificar `AuthenticatedLayout.jsx` (NavLinks: Proveedores → `/vendors` ✓, Invitados → `/guests` pendiente)
-- [ ] 4.2 Factories: `database/factories/VendorFactory.php` ✓ + `GuestFactory.php` pendiente
-- [ ] 4.3 Actualizar `DatabaseSeeder.php` (datos demo de proveedores e invitados)
-- [ ] 4.4 Suite completa: `php artisan test && npm run test && npm run build`
+- [x] 4.1 Modificar `AuthenticatedLayout.jsx` (NavLinks: Proveedores → `/vendors` ✓, Invitados → `/guests` pendiente)
+- [x] 4.2 Factories: `database/factories/VendorFactory.php` ✓ + `GuestFactory.php` pendiente
+- [x] 4.3 Actualizar `DatabaseSeeder.php` (datos demo de proveedores e invitados)
+- [x] 4.4 Suite completa: `php artisan test && npm run test && npm run build`
