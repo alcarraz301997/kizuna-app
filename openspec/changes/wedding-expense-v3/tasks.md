@@ -59,5 +59,5 @@ Chain strategy: stacked-to-main
 
 ## Fase 4: Integración
 
-- [ ] 4.1 Suite completa en verde: `php artisan test && npm run test`
-- [ ] 4.2 Verificar exportación PDF muestra nombre de mesa (GR-03)
+- [x] 4.1 Suite completa en verde: `php artisan test && npm run test`
+- [x] 4.2 Verificar exportación PDF muestra nombre de mesa (GR-03)

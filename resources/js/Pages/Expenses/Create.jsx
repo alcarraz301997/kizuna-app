@@ -409,6 +409,7 @@ export default function Create({ categories, vendors, statuses }) {
                             </div>
 
                             {/* Adjuntos */}
+                            <div>
                                 <InputLabel htmlFor="receipt_files" value="Adjuntos (Recibos)" />
                                 <input
                                     id="receipt_files"

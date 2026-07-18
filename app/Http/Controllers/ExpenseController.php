@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -295,6 +296,15 @@ class ExpenseController extends Controller
             case 'fixed':
                 $personA = round((float) $request->input('person_a_amount', 0), 2);
                 $personB = round((float) $request->input('person_b_amount', 0), 2);
+
+                // Validate that fixed amounts sum to the expense total (tolerance 0.01)
+                $sum = round($personA + $personB, 2);
+                if (abs($sum - $amount) > 0.01) {
+                    throw ValidationException::withMessages([
+                        'person_a_amount' => "La suma de los montos (S/. {$sum}) no coincide con el total del gasto (S/. {$amount}).",
+                    ]);
+                }
+
                 break;
 
             default:

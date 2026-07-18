@@ -209,7 +209,7 @@ class GuestController extends Controller
         if ($occupancy >= $table->capacity) {
             return Redirect::back()
                 ->withInput()
-                ->with('error', "La mesa \"{$table->name}\" está llena ({$table->capacity}/{$table->capacity}).");
+                ->with('error', "La mesa \"{$table->name}\" está llena. Capacidad máxima: {$table->capacity}.");
         }
 
         return $table;
