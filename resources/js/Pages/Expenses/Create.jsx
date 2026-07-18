@@ -30,10 +30,9 @@ export default function Create({ categories, vendors, statuses }) {
         percent_a: '50',
     });
 
-    const [vendorMode, setVendorMode] = useState('select'); // 'select' | 'text'
+    const [vendorMode, setVendorMode] = useState('select');
     const [receiptErrors, setReceiptErrors] = useState([]);
 
-    // Auto-calculate split amounts for 50_50 and percent
     const numAmount = parseFloat(data.amount) || 0;
     useEffect(() => {
         if (data.split_type === '50_50' && numAmount > 0) {
@@ -77,7 +76,7 @@ export default function Create({ categories, vendors, statuses }) {
         }
 
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-        const maxSize = 10 * 1024 * 1024; // 10 MB
+        const maxSize = 10 * 1024 * 1024;
 
         for (const file of files) {
             if (file.size > maxSize) {
@@ -98,7 +97,6 @@ export default function Create({ categories, vendors, statuses }) {
     const submit = (e) => {
         e.preventDefault();
 
-        // Combine vendor data: if select mode, pass vendor_id; if text mode, pass vendor_text as vendor
         const vendorData = vendorMode === 'select'
             ? { vendor_id: data.vendor_id || null, vendor: '' }
             : { vendor_id: null, vendor: data.vendor_text };
@@ -109,7 +107,6 @@ export default function Create({ categories, vendors, statuses }) {
             data: formData,
             forceFormData: true,
             onSuccess: () => {
-                // Reset receipt files on success
                 setData('receipt_files', []);
             },
         });
@@ -127,13 +124,13 @@ export default function Create({ categories, vendors, statuses }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    <div className="clay-card p-6 sm:p-8">
                         <form onSubmit={submit} className="max-w-xl space-y-6">
                             <div>
                                 <InputLabel htmlFor="category_id" value="Categoría" />
                                 <select
                                     id="category_id"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="clay-select mt-1 block w-full"
                                     value={data.category_id}
                                     onChange={(e) => setData('category_id', e.target.value)}
                                     required
@@ -170,7 +167,7 @@ export default function Create({ categories, vendors, statuses }) {
                                 <InputLabel htmlFor="vendor_mode" value="Proveedor" />
                                 <select
                                     id="vendor_mode"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="clay-select mt-1 block w-full"
                                     value={vendorMode}
                                     onChange={handleVendorSelect}
                                 >
@@ -184,7 +181,7 @@ export default function Create({ categories, vendors, statuses }) {
                                     <InputLabel htmlFor="vendor_id" value="Proveedor registrado" />
                                     <select
                                         id="vendor_id"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="clay-select mt-1 block w-full"
                                         value={data.vendor_id}
                                         onChange={handleVendorDropdown}
                                     >
@@ -216,7 +213,7 @@ export default function Create({ categories, vendors, statuses }) {
                                 <InputLabel htmlFor="status" value="Estado" />
                                 <select
                                     id="status"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="clay-select mt-1 block w-full"
                                     value={data.status}
                                     onChange={(e) => setData('status', e.target.value)}
                                     required
@@ -246,7 +243,7 @@ export default function Create({ categories, vendors, statuses }) {
                                 <InputLabel htmlFor="notes" value="Notas" />
                                 <textarea
                                     id="notes"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="clay-textarea mt-1 block w-full px-4 py-2.5"
                                     rows={3}
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
@@ -254,9 +251,8 @@ export default function Create({ categories, vendors, statuses }) {
                                 <InputError className="mt-2" message={errors.notes} />
                             </div>
 
-                            {/* --- Splitting de gastos --- */}
-                            <div className="border-t pt-6">
-                                <h3 className="mb-4 text-lg font-medium text-gray-900">
+                            <div className="border-t border-gray-200/50 pt-6">
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900">
                                     División del gasto
                                 </h3>
 
@@ -265,7 +261,7 @@ export default function Create({ categories, vendors, statuses }) {
                                         <InputLabel htmlFor="split_type_create" value="Tipo de división" />
                                         <select
                                             id="split_type_create"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            className="clay-select mt-1 block w-full"
                                             value={data.split_type}
                                             onChange={(e) => {
                                                 const newType = e.target.value;
@@ -288,7 +284,7 @@ export default function Create({ categories, vendors, statuses }) {
 
                                     {data.split_type && (
                                         <>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <InputLabel htmlFor="person_a_label_create" value="Etiqueta persona A" />
                                                     <TextInput
@@ -337,7 +333,7 @@ export default function Create({ categories, vendors, statuses }) {
                                             )}
 
                                             {data.split_type === 'fixed' && (
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     <div>
                                                         <InputLabel htmlFor="person_a_amount_create" value={`Monto ${data.person_a_label || 'Persona A'}`} />
                                                         <TextInput
@@ -372,18 +368,18 @@ export default function Create({ categories, vendors, statuses }) {
                                             )}
 
                                             {(data.split_type === '50_50' || data.split_type === 'percent') && numAmount > 0 && (
-                                                <div className="rounded-md bg-gray-50 p-4">
-                                                    <h4 className="mb-2 text-sm font-medium text-gray-700">Montos calculados</h4>
-                                                    <div className="grid grid-cols-2 gap-4">
+                                                <div className="clay-card clay-card-sky p-4">
+                                                    <h4 className="mb-2 text-sm font-semibold text-gray-700">Montos calculados</h4>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                         <div>
                                                             <span className="text-sm text-gray-500">{data.person_a_label || 'Persona A'}</span>
-                                                            <p className="text-lg font-semibold text-gray-900">
+                                                            <p className="text-lg font-bold text-gray-900">
                                                                 S/. {parseFloat(data.person_a_amount || 0).toFixed(2)}
                                                             </p>
                                                         </div>
                                                         <div>
                                                             <span className="text-sm text-gray-500">{data.person_b_label || 'Persona B'}</span>
-                                                            <p className="text-lg font-semibold text-gray-900">
+                                                            <p className="text-lg font-bold text-gray-900">
                                                                 S/. {parseFloat(data.person_b_amount || 0).toFixed(2)}
                                                             </p>
                                                         </div>
@@ -395,7 +391,7 @@ export default function Create({ categories, vendors, statuses }) {
                                             )}
 
                                             {data.split_type === 'fixed' && (
-                                                <div className="rounded-md bg-gray-50 p-3">
+                                                <div className="clay-card clay-card-sky p-3">
                                                     <p className="text-sm text-gray-600">
                                                         Suma: S/.{' '}
                                                         {((parseFloat(data.person_a_amount) || 0) + (parseFloat(data.person_b_amount) || 0)).toFixed(2)}
@@ -408,7 +404,6 @@ export default function Create({ categories, vendors, statuses }) {
                                 </div>
                             </div>
 
-                            {/* Adjuntos */}
                             <div>
                                 <InputLabel htmlFor="receipt_files" value="Adjuntos (Recibos)" />
                                 <input
@@ -416,7 +411,7 @@ export default function Create({ categories, vendors, statuses }) {
                                     type="file"
                                     multiple
                                     accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                                    className="clay-file-input mt-1 block w-full text-sm text-gray-500"
                                     onChange={handleFileSelect}
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
@@ -447,7 +442,7 @@ export default function Create({ categories, vendors, statuses }) {
                                 </PrimaryButton>
                                 <Link
                                     href={route('expenses.index')}
-                                    className="text-sm text-gray-600 hover:text-gray-900"
+                                    className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar
                                 </Link>

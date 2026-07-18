@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DangerButton from '@/Components/DangerButton';
 import PrimaryButton from '@/Components/PrimaryButton';
+import ResponsiveTable from '@/Components/ResponsiveTable';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
@@ -14,10 +15,68 @@ export default function Index({ categories }) {
         }
     };
 
+    const columns = [
+        {
+            key: 'name',
+            label: 'Categoría',
+            render: (row) => (
+                <div className="flex items-center">
+                    <span
+                        className="mr-3 inline-block h-4 w-4 rounded-full shrink-0"
+                        style={{ backgroundColor: row.color }}
+                    />
+                    <span className="font-medium text-gray-900">
+                        {row.name}
+                    </span>
+                </div>
+            ),
+        },
+        {
+            key: 'budget_limit',
+            label: 'Presupuesto',
+            render: (row) => (
+                <span className="text-gray-900">{formatCurrency(row.budget_limit)}</span>
+            ),
+        },
+        {
+            key: 'spent',
+            label: 'Gastado',
+            render: (row) => (
+                <span className="text-gray-900">{formatCurrency(row.spent)}</span>
+            ),
+        },
+        {
+            key: 'remaining',
+            label: 'Restante',
+            render: (row) => (
+                <span className={row.remaining < 0 ? 'font-semibold text-red-600' : 'text-gray-900'}>
+                    {formatCurrency(row.remaining)}
+                </span>
+            ),
+        },
+    ];
+
+    const rowActions = (row) => (
+        <>
+            <Link
+                href={route('categories.edit', row.id)}
+                className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
+            >
+                Editar
+            </Link>
+            <DangerButton
+                disabled={processing}
+                onClick={() => handleDelete(row.id)}
+            >
+                Eliminar
+            </DangerButton>
+        </>
+    );
+
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Categorías
                     </h2>
@@ -32,91 +91,26 @@ export default function Index({ categories }) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {flash?.error && (
-                        <div className="mb-4 rounded-md bg-red-50 p-4">
+                        <div className="clay-card clay-card-danger mb-4 p-4">
                             <p className="text-sm text-red-700">{flash.error}</p>
                         </div>
                     )}
 
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            {categories.length === 0 ? (
-                                <p className="text-center text-gray-500">
-                                    Aún no hay categorías.{' '}
-                                    <Link
-                                        href={route('categories.create')}
-                                        className="text-indigo-600 underline hover:text-indigo-900"
-                                    >
-                                        Crea una
-                                    </Link>
-                                    .
-                                </p>
-                            ) : (
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Categoría
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Presupuesto
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Gastado
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Restante
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Acciones
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {categories.map((category) => (
-                                            <tr key={category.id}>
-                                                <td className="whitespace-nowrap px-6 py-4">
-                                                    <div className="flex items-center">
-                                                        <span
-                                                            className="mr-3 inline-block h-4 w-4 rounded-full"
-                                                            style={{ backgroundColor: category.color }}
-                                                        />
-                                                        <span className="font-medium text-gray-900">
-                                                            {category.name}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-right text-gray-900">
-                                                    {formatCurrency(category.budget_limit)}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-right text-gray-900">
-                                                    {formatCurrency(category.spent)}
-                                                </td>
-                                                <td className={`whitespace-nowrap px-6 py-4 text-right ${category.remaining < 0 ? 'font-semibold text-red-600' : 'text-gray-900'}`}>
-                                                    {formatCurrency(category.remaining)}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <Link
-                                                            href={route('categories.edit', category.id)}
-                                                            className="text-sm text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            Editar
-                                                        </Link>
-                                                        <DangerButton
-                                                            disabled={processing}
-                                                            onClick={() => handleDelete(category.id)}
-                                                        >
-                                                            Eliminar
-                                                        </DangerButton>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
+                    {flash?.success && (
+                        <div className="clay-card clay-card-success mb-4 p-4">
+                            <p className="text-sm text-green-700">{flash.success}</p>
                         </div>
-                    </div>
+                    )}
+
+                    <ResponsiveTable
+                        columns={columns}
+                        rows={categories}
+                        rowKey={(row) => row.id}
+                        actions={rowActions}
+                        emptyMessage="Aún no hay categorías."
+                        emptyLinkHref={route('categories.create')}
+                        emptyLinkText="Crea una"
+                    />
                 </div>
             </div>
         </AuthenticatedLayout>

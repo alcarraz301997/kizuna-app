@@ -29,7 +29,7 @@ export default function Create() {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    <div className="clay-card p-6 sm:p-8">
                         <form onSubmit={submit} className="max-w-xl space-y-6">
                             <div>
                                 <InputLabel htmlFor="name" value="Nombre" />
@@ -69,7 +69,7 @@ export default function Create() {
                                     <input
                                         id="color"
                                         type="color"
-                                        className="h-10 w-14 cursor-pointer rounded border border-gray-300"
+                                        className="h-10 w-14 cursor-pointer rounded-xl border-none"
                                         value={data.color}
                                         onChange={(e) => setData('color', e.target.value)}
                                     />
@@ -89,7 +89,7 @@ export default function Create() {
                                 </PrimaryButton>
                                 <Link
                                     href={route('categories.index')}
-                                    className="text-sm text-gray-600 hover:text-gray-900"
+                                    className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar
                                 </Link>

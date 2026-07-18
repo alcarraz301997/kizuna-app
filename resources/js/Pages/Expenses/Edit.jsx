@@ -26,7 +26,6 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
         receipt_files: [],
     });
 
-    // Determine initial vendor mode: if expense has vendor_id, use 'select', otherwise 'text'
     const [vendorMode, setVendorMode] = useState(expense.vendor_id ? 'select' : (expense.vendor ? 'text' : 'select'));
     const [receiptErrors, setReceiptErrors] = useState([]);
 
@@ -58,7 +57,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
         }
 
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-        const maxSize = 10 * 1024 * 1024; // 10 MB
+        const maxSize = 10 * 1024 * 1024;
 
         for (const file of files) {
             if (file.size > maxSize) {
@@ -97,11 +96,9 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
     const handleUploadReceipts = () => {
         if (data.receipt_files.length === 0) return;
 
-        // Upload receipts one by one
         const uploadNext = (index) => {
             if (index >= data.receipt_files.length) {
                 setData('receipt_files', []);
-                // Reload the page to show new receipts
                 window.location.reload();
                 return;
             }
@@ -139,14 +136,13 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="space-y-6">
-                        {/* Main form card */}
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <div className="clay-card p-6 sm:p-8">
                             <form onSubmit={submit} className="max-w-xl space-y-6">
                                 <div>
                                     <InputLabel htmlFor="category_id" value="Categoría" />
                                     <select
                                         id="category_id"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="clay-select mt-1 block w-full"
                                         value={data.category_id}
                                         onChange={(e) => setData('category_id', e.target.value)}
                                         required
@@ -183,7 +179,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                     <InputLabel htmlFor="vendor_mode" value="Proveedor" />
                                     <select
                                         id="vendor_mode"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="clay-select mt-1 block w-full"
                                         value={vendorMode}
                                         onChange={handleVendorSelect}
                                     >
@@ -197,7 +193,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                         <InputLabel htmlFor="vendor_id" value="Proveedor registrado" />
                                         <select
                                             id="vendor_id"
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            className="clay-select mt-1 block w-full"
                                             value={data.vendor_id}
                                             onChange={handleVendorDropdown}
                                         >
@@ -229,7 +225,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                     <InputLabel htmlFor="status" value="Estado" />
                                     <select
                                         id="status"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="clay-select mt-1 block w-full"
                                         value={data.status}
                                         onChange={(e) => setData('status', e.target.value)}
                                         required
@@ -259,7 +255,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                     <InputLabel htmlFor="notes" value="Notas" />
                                     <textarea
                                         id="notes"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="clay-textarea mt-1 block w-full px-4 py-2.5"
                                         rows={3}
                                         value={data.notes}
                                         onChange={(e) => setData('notes', e.target.value)}
@@ -273,7 +269,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                     </PrimaryButton>
                                     <Link
                                         href={route('expenses.index')}
-                                        className="text-sm text-gray-600 hover:text-gray-900"
+                                        className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                     >
                                         Cancelar
                                     </Link>
@@ -281,23 +277,22 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                             </form>
                         </div>
 
-                        {/* Receipts section */}
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                            <h3 className="mb-4 text-lg font-medium text-gray-900">
+                        <div className="clay-card p-6 sm:p-8">
+                            <h3 className="mb-4 text-lg font-semibold text-gray-900">
                                 Adjuntos ({receiptCount}/{maxReceipts})
                             </h3>
 
                             <ReceiptPreview receipts={receipts} />
 
                             {canUploadMore && (
-                                <div className="mt-6 border-t pt-4">
+                                <div className="mt-6 border-t border-gray-200/50 pt-4">
                                     <InputLabel htmlFor="receipt_files" value="Agregar adjuntos" />
                                     <input
                                         id="receipt_files"
                                         type="file"
                                         multiple
                                         accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="clay-file-input mt-1 block w-full text-sm text-gray-500"
                                         onChange={handleFileSelect}
                                     />
                                     <p className="mt-1 text-xs text-gray-500">
@@ -322,7 +317,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                             <button
                                                 type="button"
                                                 onClick={handleUploadReceipts}
-                                                className="mt-3 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                className="clay-btn clay-btn-primary mt-3 inline-flex items-center px-5 py-2.5 text-xs font-semibold uppercase tracking-widest"
                                             >
                                                 Subir {data.receipt_files.length} archivo{data.receipt_files.length !== 1 ? 's' : ''}
                                             </button>
@@ -333,7 +328,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                             )}
 
                             {!canUploadMore && (
-                                <div className="mt-6 border-t pt-4">
+                                <div className="mt-6 border-t border-gray-200/50 pt-4">
                                     <p className="text-sm text-gray-500">
                                         Has alcanzado el límite de {maxReceipts} adjuntos. Elimina alguno para agregar más.
                                     </p>
@@ -341,25 +336,24 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                             )}
                         </div>
 
-                        {/* Split section */}
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                            <h3 className="mb-4 text-lg font-medium text-gray-900">
+                        <div className="clay-card p-6 sm:p-8">
+                            <h3 className="mb-4 text-lg font-semibold text-gray-900">
                                 División del gasto
                             </h3>
 
                             {expense.split ? (
                                 <>
-                                    <div className="mb-6 rounded-md bg-gray-50 p-4">
-                                        <div className="grid grid-cols-2 gap-4">
+                                    <div className="clay-card clay-card-sky mb-6 p-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <span className="text-sm text-gray-500">{expense.split.person_a_label}</span>
-                                                <p className="text-lg font-semibold text-gray-900">
+                                                <p className="text-lg font-bold text-gray-900">
                                                     S/. {expense.split.person_a_amount.toFixed(2)}
                                                 </p>
                                             </div>
                                             <div>
                                                 <span className="text-sm text-gray-500">{expense.split.person_b_label}</span>
-                                                <p className="text-lg font-semibold text-gray-900">
+                                                <p className="text-lg font-bold text-gray-900">
                                                     S/. {expense.split.person_b_amount.toFixed(2)}
                                                 </p>
                                             </div>
@@ -371,7 +365,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                     </div>
 
                                     <details className="group">
-                                        <summary className="cursor-pointer text-sm text-indigo-600 hover:text-indigo-800">
+                                        <summary className="cursor-pointer text-sm font-semibold text-indigo-600 hover:text-indigo-800">
                                             Editar división
                                         </summary>
                                         <div className="mt-4">

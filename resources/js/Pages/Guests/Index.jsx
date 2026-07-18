@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DangerButton from '@/Components/DangerButton';
 import PrimaryButton from '@/Components/PrimaryButton';
+import ResponsiveTable from '@/Components/ResponsiveTable';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 const rsvpStatusLabels = {
@@ -10,9 +11,9 @@ const rsvpStatusLabels = {
 };
 
 const rsvpStatusColors = {
-    pendiente: 'bg-yellow-100 text-yellow-800',
-    confirmado: 'bg-green-100 text-green-800',
-    no_asiste: 'bg-red-100 text-red-800',
+    pendiente: 'bg-amber-100 text-amber-800',
+    confirmado: 'bg-emerald-100 text-emerald-800',
+    no_asiste: 'bg-rose-100 text-rose-800',
 };
 
 export default function Index({ guests, counts }) {
@@ -24,17 +25,74 @@ export default function Index({ guests, counts }) {
         }
     };
 
+    const columns = [
+        {
+            key: 'name',
+            label: 'Nombre',
+            render: (row) => (
+                <span className="font-medium text-gray-900">{row.name}</span>
+            ),
+        },
+        {
+            key: 'email',
+            label: 'Email',
+            render: (row) => (
+                <span className="text-gray-700">{row.email || '—'}</span>
+            ),
+        },
+        {
+            key: 'phone',
+            label: 'Teléfono',
+            render: (row) => (
+                <span className="text-gray-700">{row.phone || '—'}</span>
+            ),
+        },
+        {
+            key: 'rsvp_status',
+            label: 'Estado RSVP',
+            render: (row) => (
+                <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${rsvpStatusColors[row.rsvp_status] || 'bg-gray-100 text-gray-800'}`}>
+                    {rsvpStatusLabels[row.rsvp_status]}
+                </span>
+            ),
+        },
+        {
+            key: 'table_name',
+            label: 'Mesa',
+            render: (row) => (
+                <span className="text-gray-700">{row.table_name ?? '—'}</span>
+            ),
+        },
+    ];
+
+    const rowActions = (row) => (
+        <>
+            <Link
+                href={route('guests.edit', row.id)}
+                className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
+            >
+                Editar
+            </Link>
+            <DangerButton
+                disabled={processing}
+                onClick={() => handleDelete(row.id)}
+            >
+                Eliminar
+            </DangerButton>
+        </>
+    );
+
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Invitados
                     </h2>
                     <div className="flex items-center gap-2">
                         <a
                             href={route('guests.export.pdf')}
-                            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                            className="clay-btn clay-btn-success !rounded-xl px-5 py-2.5 text-xs font-semibold uppercase tracking-widest"
                         >
                             Exportar PDF
                         </a>
@@ -49,116 +107,30 @@ export default function Index({ guests, counts }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div className="rounded-lg bg-white p-4 shadow">
-                            <p className="text-sm text-gray-500">Total</p>
+                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="clay-card clay-card-indigo p-5">
+                            <p className="text-sm font-medium text-primary">Total</p>
                             <p className="text-2xl font-bold text-gray-900">{counts.total}</p>
                         </div>
-                        <div className="rounded-lg bg-white p-4 shadow">
-                            <p className="text-sm text-green-600">Confirmados</p>
-                            <p className="text-2xl font-bold text-green-700">{counts.confirmados}</p>
+                        <div className="clay-card clay-card-emerald p-5">
+                            <p className="text-sm font-medium text-success">Confirmados</p>
+                            <p className="text-2xl font-bold text-gray-900">{counts.confirmados}</p>
                         </div>
-                        <div className="rounded-lg bg-white p-4 shadow">
-                            <p className="text-sm text-yellow-600">Pendientes (no confirmados)</p>
-                            <p className="text-2xl font-bold text-yellow-700">{counts.pendientes}</p>
+                        <div className="clay-card clay-card-amber p-5">
+                            <p className="text-sm font-medium text-warning">Pendientes (no confirmados)</p>
+                            <p className="text-2xl font-bold text-gray-900">{counts.pendientes}</p>
                         </div>
                     </div>
 
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            {guests.length === 0 ? (
-                                <p className="text-center text-gray-500">
-                                    Aún no hay invitados.{' '}
-                                    <Link
-                                        href={route('guests.create')}
-                                        className="text-indigo-600 underline hover:text-indigo-900"
-                                    >
-                                        Agrega uno
-                                    </Link>
-                                    .
-                                </p>
-                            ) : (
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Nombre
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Email
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Teléfono
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Estado RSVP
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Mesa
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                                Acciones
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {guests.map((guest) => (
-                                            <tr key={guest.id}>
-                                                <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-900">
-                                                    {guest.name}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-gray-700">
-                                                    {guest.email || '—'}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-gray-700">
-                                                    {guest.phone || '—'}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4">
-                                                    <span
-                                                        className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                                                            rsvpStatusColors[
-                                                                guest.rsvp_status
-                                                            ] || 'bg-gray-100 text-gray-800'
-                                                        }`}
-                                                    >
-                                                        {
-                                                            rsvpStatusLabels[
-                                                                guest.rsvp_status
-                                                            ]
-                                                        }
-                                                    </span>
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-gray-700">
-                                                    {guest.table_name ?? '—'}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <Link
-                                                            href={route(
-                                                                'guests.edit',
-                                                                guest.id,
-                                                            )}
-                                                            className="text-sm text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            Editar
-                                                        </Link>
-                                                        <DangerButton
-                                                            disabled={processing}
-                                                            onClick={() =>
-                                                                handleDelete(guest.id)
-                                                            }
-                                                        >
-                                                            Eliminar
-                                                        </DangerButton>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
-                    </div>
+                    <ResponsiveTable
+                        columns={columns}
+                        rows={guests}
+                        rowKey={(row) => row.id}
+                        actions={rowActions}
+                        emptyMessage="Aún no hay invitados."
+                        emptyLinkHref={route('guests.create')}
+                        emptyLinkText="Agrega uno"
+                    />
                 </div>
             </div>
         </AuthenticatedLayout>
