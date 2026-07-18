@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ExpenseSplitController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\GuestController;
@@ -34,6 +35,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('expenses/{expense}/receipts', [ReceiptController::class, 'store'])->name('expenses.receipts.store');
     Route::delete('receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('receipts.destroy');
+
+    Route::post('expenses/{expense}/split', [ExpenseSplitController::class, 'store'])->name('expenses.split.store');
+    Route::put('expenses/{expense}/split', [ExpenseSplitController::class, 'update'])->name('expenses.split.update');
 
     Route::resource('tables', TableController::class);
     Route::resource('guests', GuestController::class);

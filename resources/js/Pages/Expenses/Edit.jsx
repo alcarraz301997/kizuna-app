@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import ReceiptPreview from '@/Components/ReceiptPreview';
+import SplitForm from '@/Components/SplitForm';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -337,6 +338,61 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                         Has alcanzado el límite de {maxReceipts} adjuntos. Elimina alguno para agregar más.
                                     </p>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Split section */}
+                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                            <h3 className="mb-4 text-lg font-medium text-gray-900">
+                                División del gasto
+                            </h3>
+
+                            {expense.split ? (
+                                <>
+                                    <div className="mb-6 rounded-md bg-gray-50 p-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <span className="text-sm text-gray-500">{expense.split.person_a_label}</span>
+                                                <p className="text-lg font-semibold text-gray-900">
+                                                    S/. {expense.split.person_a_amount.toFixed(2)}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-500">{expense.split.person_b_label}</span>
+                                                <p className="text-lg font-semibold text-gray-900">
+                                                    S/. {expense.split.person_b_amount.toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-xs text-gray-400">
+                                            Tipo: {expense.split.split_type === '50_50' ? '50 / 50' : expense.split.split_type === 'percent' ? 'Porcentaje' : 'Monto fijo'}
+                                            {' '}· Total: S/. {expense.amount.toFixed(2)}
+                                        </p>
+                                    </div>
+
+                                    <details className="group">
+                                        <summary className="cursor-pointer text-sm text-indigo-600 hover:text-indigo-800">
+                                            Editar división
+                                        </summary>
+                                        <div className="mt-4">
+                                            <SplitForm
+                                                expenseId={expense.id}
+                                                amount={expense.amount}
+                                                split={expense.split}
+                                                standalone={true}
+                                                onSaved={() => window.location.reload()}
+                                            />
+                                        </div>
+                                    </details>
+                                </>
+                            ) : (
+                                <SplitForm
+                                    expenseId={expense.id}
+                                    amount={expense.amount}
+                                    split={null}
+                                    standalone={true}
+                                    onSaved={() => window.location.reload()}
+                                />
                             )}
                         </div>
                     </div>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Expense extends Model
 {
@@ -50,5 +51,10 @@ class Expense extends Model
     public function receipts(): HasMany
     {
         return $this->hasMany(Receipt::class);
+    }
+
+    public function split(): HasOne
+    {
+        return $this->hasOne(ExpenseSplit::class);
     }
 }

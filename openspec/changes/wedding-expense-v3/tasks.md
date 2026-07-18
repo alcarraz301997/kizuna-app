@@ -14,7 +14,7 @@
 
 Decision needed before apply: Yes
 Chained PRs recommended: Yes
-Chain strategy: pending
+Chain strategy: stacked-to-main
 400-line budget risk: High
 
 ### Suggested Work Units
@@ -46,16 +46,16 @@ Chain strategy: pending
 
 ## Fase 3: Splitting de Gastos (PR 3)
 
-- [ ] 3.1 Enum `SplitType` backed string (50_50, percent, fixed)
-- [ ] 3.2 Migración `create_expense_splits_table` con FK unique a expenses
-- [ ] 3.3 Modelo `ExpenseSplit` con cast split_type, relación `expense()`
-- [ ] 3.4 Modificar `Expense`: agregar `split()` hasOne, eager-load en controladores
-- [ ] 3.5 `ExpenseSplitController` store/update anidado con validación suma == amount (tolerancia 0.01)
-- [ ] 3.6 Rutas anidadas split en routes/web.php
-- [ ] 3.7 Componente `SplitForm.jsx`: selector tipo, labels editables, campos monto condicionales
-- [ ] 3.8 Modificar Expenses/{Create,Edit}.jsx para integrar SplitForm
-- [ ] 3.9 Tests Unit: cálculo split 3 tipos con data providers (ES-01a/b/c)
-- [ ] 3.10 Tests Feature: store/update split, validación suma inválida (ES-02, ES-03)
+- [x] 3.1 Enum `SplitType` backed string (50_50, percent, fixed)
+- [x] 3.2 Migración `create_expense_splits_table` con FK unique a expenses
+- [x] 3.3 Modelo `ExpenseSplit` con cast split_type, relación `expense()`
+- [x] 3.4 Modificar `Expense`: agregar `split()` hasOne, eager-load en controladores
+- [x] 3.5 `ExpenseSplitController` store/update anidado con validación suma == amount (tolerancia 0.01)
+- [x] 3.6 Rutas anidadas split en routes/web.php
+- [x] 3.7 Componente `SplitForm.jsx`: selector tipo, labels editables, campos monto condicionales
+- [x] 3.8 Modificar Expenses/{Create,Edit}.jsx para integrar SplitForm
+- [x] 3.9 Tests Unit: cálculo split 3 tipos con data providers (ES-01a/b/c)
+- [x] 3.10 Tests Feature: store/update split, validación suma inválida (ES-02, ES-03)
 
 ## Fase 4: Integración
 

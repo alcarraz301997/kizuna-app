@@ -113,6 +113,11 @@ class ExpenseController extends Controller
 
         $expense = $request->user()->expenses()->create($validated);
 
+        // Handle optional split data from create form
+        if ($request->filled('split_type')) {
+            $this->createSplit($request, $expense);
+        }
+
         // Process file uploads (W2 fix)
         if ($request->hasFile('receipt_files')) {
             foreach ($request->file('receipt_files') as $file) {
@@ -142,6 +147,8 @@ class ExpenseController extends Controller
     {
         $this->authorizeExpense($request, $expense);
 
+        $expense->load('split');
+
         $categories = $request->user()->categories()->orderBy('name')->get()->map(fn (Category $c) => [
             'id' => $c->id,
             'name' => $c->name,
@@ -161,6 +168,18 @@ class ExpenseController extends Controller
             'created_at' => $r->created_at->format('Y-m-d H:i'),
         ]);
 
+        $split = null;
+        if ($expense->split) {
+            $split = [
+                'id' => $expense->split->id,
+                'split_type' => $expense->split->split_type->value,
+                'person_a_label' => $expense->split->person_a_label,
+                'person_a_amount' => (float) $expense->split->person_a_amount,
+                'person_b_label' => $expense->split->person_b_label,
+                'person_b_amount' => (float) $expense->split->person_b_amount,
+            ];
+        }
+
         return Inertia::render('Expenses/Edit', [
             'expense' => [
                 'id' => $expense->id,
@@ -172,6 +191,7 @@ class ExpenseController extends Controller
                 'paid_date' => $expense->paid_date?->format('Y-m-d'),
                 'notes' => $expense->notes,
                 'receipts_count' => $expense->receipts()->count(),
+                'split' => $split,
             ],
             'categories' => $categories,
             'vendors' => $vendors,
@@ -240,5 +260,53 @@ class ExpenseController extends Controller
         if ($expense->user_id !== $request->user()->id) {
             abort(403);
         }
+    }
+
+    /**
+     * Create a split for a newly created expense from the create form.
+     */
+    private function createSplit(Request $request, Expense $expense): void
+    {
+        $splitType = $request->input('split_type');
+
+        if (! in_array($splitType, ['50_50', 'percent', 'fixed'], true)) {
+            return;
+        }
+
+        $amount = round((float) $expense->amount, 2);
+        $personALabel = $request->input('person_a_label', 'Él');
+        $personBLabel = $request->input('person_b_label', 'Ella');
+
+        switch ($splitType) {
+            case '50_50':
+                $personA = round($amount / 2, 2);
+                $personB = round($amount - $personA, 2);
+                break;
+
+            case 'percent':
+                $percentA = (float) $request->input('percent_a', 50);
+                $personA = round($amount * ($percentA / 100), 2);
+                $personB = round($amount - $personA, 2);
+                if ($personB < 0) {
+                    $personB = 0.00;
+                }
+                break;
+
+            case 'fixed':
+                $personA = round((float) $request->input('person_a_amount', 0), 2);
+                $personB = round((float) $request->input('person_b_amount', 0), 2);
+                break;
+
+            default:
+                return;
+        }
+
+        $expense->split()->create([
+            'split_type' => $splitType,
+            'person_a_label' => $personALabel,
+            'person_a_amount' => $personA,
+            'person_b_label' => $personBLabel,
+            'person_b_amount' => $personB,
+        ]);
     }
 }
