@@ -57,14 +57,18 @@ Chain strategy: feature-branch-chain
 
 ## PR 3: Invitados y Export PDF (Guest Domain)
 
-- [ ] 3.1 Crear `app/Enums/RsvpStatus.php` (backed string: pendiente, confirmado, no_asiste)
-- [ ] 3.2 Migration `create_guests_table` (FK user_id, name, email, phone, rsvp_status, table_number nullable)
-- [ ] 3.3 Modelo `app/Models/Guest.php` (belongsTo user, cast rsvp_status)
-- [ ] 3.4 Controlador `GuestController` (resource + export() con dompdf)
-- [ ] 3.5 Rutas guests + ruta `GET /guests/export` en `routes/web.php`
-- [ ] 3.6 Página `Guests/Index.jsx` (listado + contador "Confirmados: N / Pendientes: M" + botón export PDF)
-- [ ] 3.7 Páginas `Guests/Create.jsx` + `Guests/Edit.jsx` (formulario con selects RSVP + campo mesa)
-- [ ] 3.8 Tests: `tests/Feature/GuestTest.php` (GR-01a crear, GR-01b asignar mesa, GR-01c cambiar RSVP, GR-02 contador, GR-03 export PDF)
+- [x] 3.1 Crear `app/Enums/RsvpStatus.php` (backed string: pendiente, confirmado, no_asiste)
+- [x] 3.2 Migration `create_guests_table` (FK user_id, name, email, phone, rsvp_status, table_number nullable)
+- [x] 3.3 Modelo `app/Models/Guest.php` (belongsTo user, cast rsvp_status)
+- [x] 3.4 Controlador `GuestController` (resource + export() con dompdf)
+- [x] 3.5 Rutas guests + ruta `GET /guests/export` en `routes/web.php`
+- [x] 3.6 Página `Guests/Index.jsx` (listado + contador "Confirmados: N / Pendientes: M" + botón export PDF)
+- [x] 3.7 Páginas `Guests/Create.jsx` + `Guests/Edit.jsx` (formulario con selects RSVP + campo mesa)
+- [x] 3.8 Tests: `tests/Feature/GuestTest.php` (GR-01a crear, GR-01b asignar mesa, GR-01c cambiar RSVP, GR-02 contador, GR-03 export PDF)
+
+### Adicional
+- [x] Test `tests/Unit/RsvpStatusTest.php` (7 enum unit tests)
+- [x] Factory `database/factories/GuestFactory.php`
 
 ## PR 4: Integración y Verificación
 
