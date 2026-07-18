@@ -50,4 +50,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Guest::class);
     }
+
+    public function tables(): HasMany
+    {
+        return $this->hasMany(Table::class);
+    }
 }

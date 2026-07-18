@@ -6,6 +6,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\TableController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::post('expenses/{expense}/receipts', [ReceiptController::class, 'store'])->name('expenses.receipts.store');
     Route::delete('receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('receipts.destroy');
 
+    Route::resource('tables', TableController::class);
     Route::resource('guests', GuestController::class);
     Route::get('guests/export/pdf', [GuestController::class, 'export'])->name('guests.export.pdf');
 });

@@ -49,6 +49,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Proveedores
                                 </NavLink>
                                 <NavLink
+                                    href={route('tables.index')}
+                                    active={route().current('tables.*')}
+                                >
+                                    Mesas
+                                </NavLink>
+                                <NavLink
                                     href={route('guests.index')}
                                     active={route().current('guests.*')}
                                 >
@@ -175,6 +181,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('vendors.*')}
                         >
                             Proveedores
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('tables.index')}
+                            active={route().current('tables.*')}
+                        >
+                            Mesas
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route('guests.index')}
