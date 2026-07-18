@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ExpenseStatus;
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -63,8 +64,14 @@ class ExpenseController extends Controller
             'name' => $c->name,
         ]);
 
+        $vendors = $request->user()->vendors()->orderBy('name')->get()->map(fn (Vendor $v) => [
+            'id' => $v->id,
+            'name' => $v->name,
+        ]);
+
         return Inertia::render('Expenses/Create', [
             'categories' => $categories,
+            'vendors' => $vendors,
             'statuses' => collect(ExpenseStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => ucfirst($s->value),
@@ -81,6 +88,7 @@ class ExpenseController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'vendor' => ['nullable', 'string', 'max:255'],
+            'vendor_id' => ['nullable', 'exists:vendors,id'],
             'status' => ['required', 'string', 'in:planned,contracted,paid'],
             'paid_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
@@ -90,6 +98,14 @@ class ExpenseController extends Controller
         $category = $request->user()->categories()->find($validated['category_id']);
         if (! $category) {
             abort(403, 'Category does not belong to you.');
+        }
+
+        // If vendor_id provided, ensure vendor belongs to the user
+        if (! empty($validated['vendor_id'])) {
+            $vendor = $request->user()->vendors()->find($validated['vendor_id']);
+            if (! $vendor) {
+                abort(403, 'Vendor does not belong to you.');
+            }
         }
 
         $validated['user_id'] = $request->user()->id;
@@ -111,21 +127,40 @@ class ExpenseController extends Controller
             'name' => $c->name,
         ]);
 
+        $vendors = $request->user()->vendors()->orderBy('name')->get()->map(fn (Vendor $v) => [
+            'id' => $v->id,
+            'name' => $v->name,
+        ]);
+
+        $receipts = $expense->receipts()->orderBy('created_at', 'desc')->get()->map(fn ($r) => [
+            'id' => $r->id,
+            'file_name' => $r->file_name,
+            'file_type' => $r->file_type,
+            'file_size' => $r->file_size,
+            'file_url' => $r->file_url,
+            'created_at' => $r->created_at->format('Y-m-d H:i'),
+        ]);
+
         return Inertia::render('Expenses/Edit', [
             'expense' => [
                 'id' => $expense->id,
                 'category_id' => $expense->category_id,
                 'amount' => (float) $expense->amount,
                 'vendor' => $expense->vendor,
+                'vendor_id' => $expense->vendor_id,
                 'status' => $expense->status->value,
                 'paid_date' => $expense->paid_date?->format('Y-m-d'),
                 'notes' => $expense->notes,
+                'receipts_count' => $expense->receipts()->count(),
             ],
             'categories' => $categories,
+            'vendors' => $vendors,
+            'receipts' => $receipts,
             'statuses' => collect(ExpenseStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => ucfirst($s->value),
             ]),
+            'maxReceipts' => 5,
         ]);
     }
 
@@ -140,6 +175,7 @@ class ExpenseController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'vendor' => ['nullable', 'string', 'max:255'],
+            'vendor_id' => ['nullable', 'exists:vendors,id'],
             'status' => ['required', 'string', 'in:planned,contracted,paid'],
             'paid_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
@@ -149,6 +185,14 @@ class ExpenseController extends Controller
         $category = $request->user()->categories()->find($validated['category_id']);
         if (! $category) {
             abort(403, 'Category does not belong to you.');
+        }
+
+        // If vendor_id provided, ensure vendor belongs to the user
+        if (! empty($validated['vendor_id'])) {
+            $vendor = $request->user()->vendors()->find($validated['vendor_id']);
+            if (! $vendor) {
+                abort(403, 'Vendor does not belong to you.');
+            }
         }
 
         $expense->update($validated);

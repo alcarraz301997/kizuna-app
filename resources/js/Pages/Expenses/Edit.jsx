@@ -3,7 +3,9 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import ReceiptPreview from '@/Components/ReceiptPreview';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 const statusLabels = {
     planned: 'Planeado',
@@ -11,20 +13,117 @@ const statusLabels = {
     paid: 'Pagado',
 };
 
-export default function Edit({ expense, categories, statuses }) {
+export default function Edit({ expense, categories, vendors, receipts, statuses, maxReceipts }) {
     const { data, setData, put, errors, processing } = useForm({
         category_id: expense.category_id,
         amount: expense.amount,
-        vendor: expense.vendor || '',
+        vendor_text: expense.vendor || '',
+        vendor_id: expense.vendor_id || '',
         status: expense.status,
         paid_date: expense.paid_date || '',
         notes: expense.notes || '',
+        receipt_files: [],
     });
+
+    // Determine initial vendor mode: if expense has vendor_id, use 'select', otherwise 'text'
+    const [vendorMode, setVendorMode] = useState(expense.vendor_id ? 'select' : (expense.vendor ? 'text' : 'select'));
+    const [receiptErrors, setReceiptErrors] = useState([]);
+
+    const handleVendorSelect = (e) => {
+        const mode = e.target.value;
+        setVendorMode(mode);
+        if (mode === 'text') {
+            setData('vendor_id', '');
+        } else {
+            setData('vendor_text', '');
+        }
+    };
+
+    const handleVendorDropdown = (e) => {
+        setData('vendor_id', e.target.value);
+    };
+
+    const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files || []);
+        const errors = [];
+        const validFiles = [];
+
+        const currentCount = receipts.length;
+        if (currentCount + files.length > maxReceipts) {
+            errors.push(`Máximo ${maxReceipts} archivos por gasto (ya tienes ${currentCount})`);
+            e.target.value = '';
+            setReceiptErrors(errors);
+            return;
+        }
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+        const maxSize = 10 * 1024 * 1024; // 10 MB
+
+        for (const file of files) {
+            if (file.size > maxSize) {
+                errors.push(`"${file.name}" excede 10 MB`);
+                continue;
+            }
+            if (!allowedTypes.includes(file.type)) {
+                errors.push(`"${file.name}" no es un tipo permitido (JPEG, PNG, GIF, WebP, PDF)`);
+                continue;
+            }
+            validFiles.push(file);
+        }
+
+        setReceiptErrors(errors);
+        setData('receipt_files', validFiles);
+    };
 
     const submit = (e) => {
         e.preventDefault();
-        put(route('expenses.update', expense.id));
+
+        const vendorData = vendorMode === 'select'
+            ? { vendor_id: data.vendor_id || null, vendor: '' }
+            : { vendor_id: null, vendor: data.vendor_text };
+
+        const formData = { ...data, ...vendorData };
+
+        put(route('expenses.update', expense.id), {
+            data: formData,
+            forceFormData: true,
+            onSuccess: () => {
+                setData('receipt_files', []);
+            },
+        });
     };
+
+    const handleUploadReceipts = () => {
+        if (data.receipt_files.length === 0) return;
+
+        // Upload receipts one by one
+        const uploadNext = (index) => {
+            if (index >= data.receipt_files.length) {
+                setData('receipt_files', []);
+                // Reload the page to show new receipts
+                window.location.reload();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('receipt', data.receipt_files[index]);
+
+            fetch(route('expenses.receipts.store', expense.id), {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+            }).then(() => {
+                uploadNext(index + 1);
+            });
+        };
+
+        uploadNext(0);
+    };
+
+    const receiptCount = receipts.length;
+    const canUploadMore = receiptCount < maxReceipts;
 
     return (
         <AuthenticatedLayout
@@ -38,111 +137,208 @@ export default function Edit({ expense, categories, statuses }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <form onSubmit={submit} className="max-w-xl space-y-6">
-                            <div>
-                                <InputLabel htmlFor="category_id" value="Categoría" />
-                                <select
-                                    id="category_id"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    value={data.category_id}
-                                    onChange={(e) => setData('category_id', e.target.value)}
-                                    required
-                                >
-                                    <option value="">Selecciona una categoría</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError className="mt-2" message={errors.category_id} />
-                            </div>
+                    <div className="space-y-6">
+                        {/* Main form card */}
+                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                            <form onSubmit={submit} className="max-w-xl space-y-6">
+                                <div>
+                                    <InputLabel htmlFor="category_id" value="Categoría" />
+                                    <select
+                                        id="category_id"
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        value={data.category_id}
+                                        onChange={(e) => setData('category_id', e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Selecciona una categoría</option>
+                                        {categories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError className="mt-2" message={errors.category_id} />
+                                </div>
 
-                            <div>
-                                <InputLabel htmlFor="amount" value="Monto" />
-                                <TextInput
-                                    id="amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    className="mt-1 block w-full"
-                                    value={data.amount}
-                                    onChange={(e) => setData('amount', e.target.value)}
-                                    required
-                                    isFocused
-                                    autoComplete="off"
-                                    placeholder="S/. 0.00"
-                                />
-                                <InputError className="mt-2" message={errors.amount} />
-                            </div>
+                                <div>
+                                    <InputLabel htmlFor="amount" value="Monto" />
+                                    <TextInput
+                                        id="amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        className="mt-1 block w-full"
+                                        value={data.amount}
+                                        onChange={(e) => setData('amount', e.target.value)}
+                                        required
+                                        isFocused
+                                        autoComplete="off"
+                                        placeholder="S/. 0.00"
+                                    />
+                                    <InputError className="mt-2" message={errors.amount} />
+                                </div>
 
-                            <div>
-                                <InputLabel htmlFor="vendor" value="Proveedor" />
-                                <TextInput
-                                    id="vendor"
-                                    className="mt-1 block w-full"
-                                    value={data.vendor}
-                                    onChange={(e) => setData('vendor', e.target.value)}
-                                    autoComplete="off"
-                                />
-                                <InputError className="mt-2" message={errors.vendor} />
-                            </div>
+                                <div>
+                                    <InputLabel htmlFor="vendor_mode" value="Proveedor" />
+                                    <select
+                                        id="vendor_mode"
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        value={vendorMode}
+                                        onChange={handleVendorSelect}
+                                    >
+                                        <option value="select">Seleccionar proveedor</option>
+                                        <option value="text">Otro (texto libre)</option>
+                                    </select>
+                                </div>
 
-                            <div>
-                                <InputLabel htmlFor="status" value="Estado" />
-                                <select
-                                    id="status"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    value={data.status}
-                                    onChange={(e) => setData('status', e.target.value)}
-                                    required
-                                >
-                                    {statuses.map((s) => (
-                                        <option key={s.value} value={s.value}>
-                                            {statusLabels[s.value] || s.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError className="mt-2" message={errors.status} />
-                            </div>
+                                {vendorMode === 'select' ? (
+                                    <div>
+                                        <InputLabel htmlFor="vendor_id" value="Proveedor registrado" />
+                                        <select
+                                            id="vendor_id"
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            value={data.vendor_id}
+                                            onChange={handleVendorDropdown}
+                                        >
+                                            <option value="">Ninguno</option>
+                                            {vendors.map((v) => (
+                                                <option key={v.id} value={v.id}>
+                                                    {v.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError className="mt-2" message={errors.vendor_id} />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <InputLabel htmlFor="vendor_text" value="Nombre del proveedor" />
+                                        <TextInput
+                                            id="vendor_text"
+                                            className="mt-1 block w-full"
+                                            value={data.vendor_text}
+                                            onChange={(e) => setData('vendor_text', e.target.value)}
+                                            autoComplete="off"
+                                            placeholder="Ej: Florería Local"
+                                        />
+                                        <InputError className="mt-2" message={errors.vendor} />
+                                    </div>
+                                )}
 
-                            <div>
-                                <InputLabel htmlFor="paid_date" value="Fecha de Pago" />
-                                <TextInput
-                                    id="paid_date"
-                                    type="date"
-                                    className="mt-1 block w-full"
-                                    value={data.paid_date}
-                                    onChange={(e) => setData('paid_date', e.target.value)}
-                                />
-                                <InputError className="mt-2" message={errors.paid_date} />
-                            </div>
+                                <div>
+                                    <InputLabel htmlFor="status" value="Estado" />
+                                    <select
+                                        id="status"
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        value={data.status}
+                                        onChange={(e) => setData('status', e.target.value)}
+                                        required
+                                    >
+                                        {statuses.map((s) => (
+                                            <option key={s.value} value={s.value}>
+                                                {statusLabels[s.value] || s.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError className="mt-2" message={errors.status} />
+                                </div>
 
-                            <div>
-                                <InputLabel htmlFor="notes" value="Notas" />
-                                <textarea
-                                    id="notes"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    rows={3}
-                                    value={data.notes}
-                                    onChange={(e) => setData('notes', e.target.value)}
-                                />
-                                <InputError className="mt-2" message={errors.notes} />
-                            </div>
+                                <div>
+                                    <InputLabel htmlFor="paid_date" value="Fecha de Pago" />
+                                    <TextInput
+                                        id="paid_date"
+                                        type="date"
+                                        className="mt-1 block w-full"
+                                        value={data.paid_date}
+                                        onChange={(e) => setData('paid_date', e.target.value)}
+                                    />
+                                    <InputError className="mt-2" message={errors.paid_date} />
+                                </div>
 
-                            <div className="flex items-center gap-4">
-                                <PrimaryButton disabled={processing}>
-                                    Actualizar Gasto
-                                </PrimaryButton>
-                                <Link
-                                    href={route('expenses.index')}
-                                    className="text-sm text-gray-600 hover:text-gray-900"
-                                >
-                                    Cancelar
-                                </Link>
-                            </div>
-                        </form>
+                                <div>
+                                    <InputLabel htmlFor="notes" value="Notas" />
+                                    <textarea
+                                        id="notes"
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        rows={3}
+                                        value={data.notes}
+                                        onChange={(e) => setData('notes', e.target.value)}
+                                    />
+                                    <InputError className="mt-2" message={errors.notes} />
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                    <PrimaryButton disabled={processing}>
+                                        Actualizar Gasto
+                                    </PrimaryButton>
+                                    <Link
+                                        href={route('expenses.index')}
+                                        className="text-sm text-gray-600 hover:text-gray-900"
+                                    >
+                                        Cancelar
+                                    </Link>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Receipts section */}
+                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                            <h3 className="mb-4 text-lg font-medium text-gray-900">
+                                Adjuntos ({receiptCount}/{maxReceipts})
+                            </h3>
+
+                            <ReceiptPreview receipts={receipts} />
+
+                            {canUploadMore && (
+                                <div className="mt-6 border-t pt-4">
+                                    <InputLabel htmlFor="receipt_files" value="Agregar adjuntos" />
+                                    <input
+                                        id="receipt_files"
+                                        type="file"
+                                        multiple
+                                        accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                                        onChange={handleFileSelect}
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Máximo {maxReceipts} archivos en total. Imágenes o PDF. Hasta 10 MB cada uno.
+                                    </p>
+                                    {receiptErrors.length > 0 && (
+                                        <ul className="mt-2 space-y-1">
+                                            {receiptErrors.map((err, i) => (
+                                                <li key={i} className="text-sm text-red-600">{err}</li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {data.receipt_files.length > 0 && (
+                                        <div className="mt-3">
+                                            <ul className="space-y-1">
+                                                {data.receipt_files.map((file, i) => (
+                                                    <li key={i} className="text-sm text-gray-600">
+                                                        ✓ {file.name} ({(file.size / 1024).toFixed(0)} KB)
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <button
+                                                type="button"
+                                                onClick={handleUploadReceipts}
+                                                className="mt-3 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                            >
+                                                Subir {data.receipt_files.length} archivo{data.receipt_files.length !== 1 ? 's' : ''}
+                                            </button>
+                                        </div>
+                                    )}
+                                    <InputError className="mt-2" message={errors.receipt_files} />
+                                </div>
+                            )}
+
+                            {!canUploadMore && (
+                                <div className="mt-6 border-t pt-4">
+                                    <p className="text-sm text-gray-500">
+                                        Has alcanzado el límite de {maxReceipts} adjuntos. Elimina alguno para agregar más.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
