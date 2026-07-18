@@ -50,6 +50,8 @@ return [
         'receipts' => [
             'driver' => 'local',
             'root' => storage_path('app/receipts'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/receipts',
+            'serve' => true,
             'throw' => false,
             'report' => false,
         ],

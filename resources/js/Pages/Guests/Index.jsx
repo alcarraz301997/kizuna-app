@@ -59,7 +59,7 @@ export default function Index({ guests, counts }) {
                             <p className="text-2xl font-bold text-green-700">{counts.confirmados}</p>
                         </div>
                         <div className="rounded-lg bg-white p-4 shadow">
-                            <p className="text-sm text-yellow-600">Pendientes</p>
+                            <p className="text-sm text-yellow-600">Pendientes (no confirmados)</p>
                             <p className="text-2xl font-bold text-yellow-700">{counts.pendientes}</p>
                         </div>
                     </div>

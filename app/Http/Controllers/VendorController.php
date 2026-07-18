@@ -86,6 +86,14 @@ class VendorController extends Controller
     }
 
     /**
+     * Display the vendor (redirect to index since Inertia doesn't use show).
+     */
+    public function show(): RedirectResponse
+    {
+        return Redirect::route('vendors.index');
+    }
+
+    /**
      * Show the form for editing the vendor.
      */
     public function edit(Request $request, Vendor $vendor): Response

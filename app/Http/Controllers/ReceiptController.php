@@ -40,8 +40,8 @@ class ReceiptController extends Controller
         $extension = $file->getClientOriginalExtension();
         $filename = time() . '_' . Str::random(8) . '.' . $extension;
 
-        // Store on the receipts disk
-        $path = $file->storeAs('/', $filename, 'receipts');
+        // Store on the receipts disk, organized by expense
+        $path = $file->storeAs((string) $expense->id, $filename, 'receipts');
 
         $expense->receipts()->create([
             'file_path' => $path,

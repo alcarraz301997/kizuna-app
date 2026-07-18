@@ -74,7 +74,7 @@ class GuestTest extends TestCase
             fn ($page) => $page
                 ->where('counts.total', 5)
                 ->where('counts.confirmados', 2)
-                ->where('counts.pendientes', 2)
+                ->where('counts.pendientes', 3)
         );
     }
 

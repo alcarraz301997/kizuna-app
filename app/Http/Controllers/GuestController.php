@@ -28,10 +28,13 @@ class GuestController extends Controller
             'table_number' => $g->table_number,
         ]);
 
+        $total = $guests->count();
+        $confirmados = $guests->where('rsvp_status', 'confirmado')->count();
+
         $counts = [
-            'total' => $guests->count(),
-            'confirmados' => $guests->where('rsvp_status', 'confirmado')->count(),
-            'pendientes' => $guests->where('rsvp_status', 'pendiente')->count(),
+            'total' => $total,
+            'confirmados' => $confirmados,
+            'pendientes' => $total - $confirmados,
         ];
 
         return Inertia::render('Guests/Index', [
@@ -72,6 +75,14 @@ class GuestController extends Controller
 
         $request->user()->guests()->create($validated);
 
+        return Redirect::route('guests.index');
+    }
+
+    /**
+     * Display the guest (redirect to index since Inertia doesn't use show).
+     */
+    public function show(): RedirectResponse
+    {
         return Redirect::route('guests.index');
     }
 

@@ -9,6 +9,7 @@ use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -110,7 +111,26 @@ class ExpenseController extends Controller
 
         $validated['user_id'] = $request->user()->id;
 
-        $request->user()->expenses()->create($validated);
+        $expense = $request->user()->expenses()->create($validated);
+
+        // Process file uploads (W2 fix)
+        if ($request->hasFile('receipt_files')) {
+            foreach ($request->file('receipt_files') as $file) {
+                if ($expense->receipts()->count() >= 5) {
+                    break;
+                }
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '_' . Str::random(8) . '.' . $extension;
+                $path = $file->storeAs((string) $expense->id, $filename, 'receipts');
+                $expense->receipts()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'user_id' => $request->user()->id,
+                ]);
+            }
+        }
 
         return Redirect::route('expenses.index');
     }
