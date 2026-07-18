@@ -16,7 +16,7 @@ class Guest extends Model
         'email',
         'phone',
         'rsvp_status',
-        'table_number',
+        'table_id',
         'user_id',
     ];
 
@@ -30,5 +30,10 @@ class Guest extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function table(): BelongsTo
+    {
+        return $this->belongsTo(Table::class);
     }
 }

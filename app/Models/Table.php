@@ -31,13 +31,10 @@ class Table extends Model
 
     /**
      * Guests assigned to this table.
-     *
-     * @todo In PR 2, change foreign key from 'table_number' to 'table_id'
-     *       after the add_table_id_to_guests migration runs.
      */
     public function guests(): HasMany
     {
-        return $this->hasMany(Guest::class, 'table_number');
+        return $this->hasMany(Guest::class, 'table_id');
     }
 
     /**

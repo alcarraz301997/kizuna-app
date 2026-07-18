@@ -35,14 +35,14 @@ Chain strategy: pending
 
 ## Fase 2: Guest → table_id + Frontend Mesas (PR 2)
 
-- [ ] 2.1 Migración `add_table_id_to_guests`: agregar FK, migrar datos desde table_number, dropear table_number
-- [ ] 2.2 Modificar `Guest`: reemplazar `table_number` → `table_id` en fillable, agregar `table()` belongsTo
-- [ ] 2.3 Modificar `GuestController`: validación table_id en store/update, pasar lista de mesas a vistas
+- [x] 2.1 Migración `add_table_id_to_guests`: agregar FK, migrar datos desde table_number, dropear table_number
+- [x] 2.2 Modificar `Guest`: reemplazar `table_number` → `table_id` en fillable, agregar `table()` belongsTo
+- [x] 2.3 Modificar `GuestController`: validación table_id en store/update, pasar lista de mesas a vistas
 - [x] 2.4 Modificar `User`: agregar `tables()` hasMany
-- [ ] 2.5 Pages Tables/{Index,Create,Edit}.jsx con ocupación visible y progreso capacidad
-- [ ] 2.6 Modificar Guests/{Create,Edit}.jsx: dropdown de mesas reemplaza input numérico
-- [ ] 2.7 Tests: asignación invitado a mesa, capacidad excedida (TM-04a/b, GR-01b)
-- [ ] 2.8 Tests: migración datos table_number existentes (GR-04)
+- [x] 2.5 Pages Tables/{Index,Create,Edit}.jsx con ocupación visible y progreso capacidad
+- [x] 2.6 Modificar Guests/{Create,Edit}.jsx: dropdown de mesas reemplaza input numérico
+- [x] 2.7 Tests: asignación invitado a mesa, capacidad excedida (TM-04a/b, GR-01b)
+- [x] 2.8 Tests: migración datos table_number existentes (GR-04)
 
 ## Fase 3: Splitting de Gastos (PR 3)
 

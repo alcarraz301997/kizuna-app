@@ -129,7 +129,7 @@ export default function Index({ guests, counts }) {
                                                     </span>
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-gray-700">
-                                                    {guest.table_number ?? '—'}
+                                                    {guest.table_name ?? '—'}
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">

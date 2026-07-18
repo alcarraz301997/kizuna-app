@@ -5,13 +5,13 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create({ rsvpStatuses }) {
+export default function Create({ rsvpStatuses, tables }) {
     const { data, setData, post, errors, processing } = useForm({
         name: '',
         email: '',
         phone: '',
         rsvp_status: 'pendiente',
-        table_number: '',
+        table_id: '',
     });
 
     const submit = (e) => {
@@ -111,24 +111,32 @@ export default function Create({ rsvpStatuses }) {
 
                                 <div>
                                     <InputLabel
-                                        htmlFor="table_number"
-                                        value="Mesa (número libre)"
+                                        htmlFor="table_id"
+                                        value="Mesa"
                                     />
-                                    <TextInput
-                                        id="table_number"
-                                        type="number"
-                                        className="mt-1 block w-full"
-                                        value={data.table_number}
+                                    <select
+                                        id="table_id"
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        value={data.table_id}
                                         onChange={(e) =>
-                                            setData('table_number', e.target.value)
+                                            setData('table_id', e.target.value)
                                         }
-                                        autoComplete="off"
-                                        placeholder="Ej: 3"
-                                        min="1"
-                                    />
+                                    >
+                                        <option value="">Sin mesa</option>
+                                        {tables.map((table) => (
+                                            <option
+                                                key={table.id}
+                                                value={table.id}
+                                                disabled={table.is_full}
+                                            >
+                                                {table.name} ({table.guests_count}/{table.capacity})
+                                                {table.is_full ? ' — llena' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
                                     <InputError
                                         className="mt-2"
-                                        message={errors.table_number}
+                                        message={errors.table_id}
                                     />
                                 </div>
                             </div>

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Guest;
+use App\Models\Table;
 use App\Models\User;
 use App\Enums\RsvpStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,8 +27,20 @@ class GuestFactory extends Factory
             'email' => fake()->optional()->safeEmail(),
             'phone' => fake()->optional()->phoneNumber(),
             'rsvp_status' => fake()->randomElement(RsvpStatus::cases())->value,
-            'table_number' => fake()->optional()->numberBetween(1, 20),
+            'table_id' => null,
             'user_id' => User::factory(),
         ];
+    }
+
+    /**
+     * Assign the guest to a specific table.
+     */
+    public function forTable(Table|int $table): static
+    {
+        $tableId = $table instanceof Table ? $table->id : $table;
+
+        return $this->state(fn () => [
+            'table_id' => $tableId,
+        ]);
     }
 }

@@ -177,15 +177,13 @@ class TableTest extends TestCase
 
     /**
      * TM-02a: Table deletion blocked when guests exist.
-     *
-     * Uses table_number as the temporary FK (will become table_id in PR 2).
      */
     public function test_table_deletion_blocked_when_guests_exist(): void
     {
         $table = Table::factory()->create(['user_id' => $this->user->id]);
         Guest::factory()->create([
             'user_id' => $this->user->id,
-            'table_number' => $table->id,
+            'table_id' => $table->id,
         ]);
 
         $response = $this

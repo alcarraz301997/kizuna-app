@@ -92,7 +92,7 @@
                                 {{ $guest->rsvp_status->value }}
                         @endswitch
                     </td>
-                    <td>{{ $guest->table_number ?? '—' }}</td>
+                    <td>{{ $guest->table->name ?? '—' }}</td>
                 </tr>
             @empty
                 <tr>
