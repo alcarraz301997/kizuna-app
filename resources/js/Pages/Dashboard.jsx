@@ -1,8 +1,22 @@
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import PrimaryButton from '@/Components/PrimaryButton';
+import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { Head } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 export default function Dashboard({ categories, totals }) {
+    const { wedding } = usePage().props;
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+    });
+
+    const createWedding = (event) => {
+        event.preventDefault();
+        post('/weddings');
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -15,6 +29,61 @@ export default function Dashboard({ categories, totals }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <section className="clay-card clay-card-indigo mb-8 p-5 sm:p-6" aria-labelledby="wedding-setup-title">
+                        {wedding ? (
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h3 id="wedding-setup-title" className="text-lg font-semibold text-gray-900">
+                                        {wedding.name}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-600">
+                                        Continúa organizando el presupuesto y los detalles de tu boda.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={`/weddings/${wedding.id}`}
+                                    className="clay-btn clay-btn-primary inline-flex min-h-touch items-center justify-center px-5 py-2.5 text-sm font-semibold"
+                                >
+                                    Ir al espacio de trabajo
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="max-w-2xl">
+                                <h3 id="wedding-setup-title" className="text-lg font-semibold text-gray-900">
+                                    Comienza a planificar tu boda
+                                </h3>
+                                <p className="mt-1 text-sm text-gray-600">
+                                    Crea tu espacio de trabajo para acceder a las herramientas de planificación.
+                                </p>
+                                <form onSubmit={createWedding} className="mt-5 space-y-4">
+                                    <div>
+                                        <InputLabel htmlFor="wedding_name" value="Nombre de la boda" />
+                                        <TextInput
+                                            id="wedding_name"
+                                            name="name"
+                                            value={data.name}
+                                            onChange={(event) => setData('name', event.target.value)}
+                                            className="mt-1 block w-full"
+                                            autoComplete="off"
+                                            required
+                                            aria-invalid={Boolean(errors.name)}
+                                            aria-describedby={errors.name ? 'wedding_name_error' : undefined}
+                                        />
+                                        <InputError
+                                            id="wedding_name_error"
+                                            message={errors.name}
+                                            className="mt-2"
+                                            role="alert"
+                                        />
+                                    </div>
+                                    <PrimaryButton disabled={processing} aria-live="polite">
+                                        {processing ? 'Creando espacio...' : 'Crear espacio de boda'}
+                                    </PrimaryButton>
+                                </form>
+                            </div>
+                        )}
+                    </section>
+
                     <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
                         <div className="clay-card clay-card-indigo p-5 sm:p-6">
                             <p className="text-sm font-medium text-primary">Presupuesto Total</p>
