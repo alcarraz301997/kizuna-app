@@ -28,7 +28,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-2 sm:-my-px sm:ms-10 sm:flex sm:items-center">
+                            <div className="hidden space-x-2 xl:-my-px xl:ms-10 xl:flex xl:items-center">
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
@@ -65,11 +65,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Invitados
                                 </NavLink>
-                                <PlanningNav wedding={wedding} />
+                                <PlanningNav
+                                    wedding={wedding}
+                                    variant="desktop"
+                                />
                             </div>
                         </div>
 
-                        <div className="hidden sm:flex sm:items-center sm:gap-3">
+                        <div className="hidden xl:flex xl:items-center xl:gap-3">
                             <ThemeToggle />
 
                             <div className="relative ms-1">
@@ -116,7 +119,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        <div className="-me-2 flex items-center gap-2 sm:hidden">
+                        <div className="-me-2 flex items-center gap-2 xl:hidden">
                             <ThemeToggle />
                             <button
                                 onClick={() =>
@@ -163,7 +166,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div
                     className={
                         (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
+                        ' xl:hidden'
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
@@ -209,7 +212,11 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Invitados
                         </ResponsiveNavLink>
-                        <PlanningNav wedding={wedding} />
+                        <PlanningNav
+                            wedding={wedding}
+                            variant="mobile"
+                            onNavigate={closeNav}
+                        />
                     </div>
 
                     <div className="border-t border-white/40 pb-1 pt-4">

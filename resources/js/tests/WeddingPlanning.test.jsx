@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import Workspace from '@/Pages/Weddings/Show';
 import Templates from '@/Pages/Weddings/CategoryTemplates';
 import Forecast from '@/Pages/Weddings/Forecast';
@@ -8,7 +8,17 @@ import PlanningNav from '@/Components/PlanningNav';
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
-    Link: ({ children, ...props }) => <a {...props}>{children}</a>,
+    Link: ({ children, onClick, ...props }) => (
+        <a
+            {...props}
+            onClick={(event) => {
+                event.preventDefault();
+                onClick?.(event);
+            }}
+        >
+            {children}
+        </a>
+    ),
     useForm: () => ({ post: vi.fn(), processing: false, data: {}, setData: vi.fn() }),
 }));
 
@@ -67,10 +77,65 @@ describe('wedding planning pages', () => {
         expect(screen.getByText(/sin alertas/i)).toBeInTheDocument();
     });
 
-    it('exposes planning navigation for an admitted wedding only', () => {
+    it('hides planning navigation without an admitted wedding', () => {
+        const { container } = render(<PlanningNav wedding={null} />);
+
+        expect(container).toBeEmptyDOMElement();
+        expect(
+            screen.queryByRole('button', { name: /planificación/i }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows one compact desktop trigger and its destinations when opened', () => {
         render(<PlanningNav wedding={{ id: 7, name: 'Our Wedding' }} />);
-        expect(screen.getByRole('link', { name: /espacio de trabajo/i })).toHaveAttribute('href', '/weddings/7');
-        expect(screen.getByRole('link', { name: /pronóstico/i })).toHaveAttribute('href', '/weddings/7/forecast');
-        expect(screen.getByRole('link', { name: /variación/i })).toHaveAttribute('href', '/weddings/7/variance');
+
+        const trigger = screen.getByRole('button', {
+            name: /planificación/i,
+        });
+        expect(trigger).toHaveAttribute('aria-expanded', 'false');
+        expect(
+            screen.queryByRole('link', { name: /espacio de trabajo/i }),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(trigger);
+
+        expect(trigger).toHaveAttribute('aria-expanded', 'true');
+        expect(
+            screen.getByRole('link', { name: /espacio de trabajo/i }),
+        ).toHaveAttribute('href', '/weddings/7');
+        expect(
+            screen.getByRole('link', { name: /plantillas/i }),
+        ).toHaveAttribute('href', '/weddings/7/category-templates');
+        expect(
+            screen.getByRole('link', { name: /pronóstico/i }),
+        ).toHaveAttribute('href', '/weddings/7/forecast');
+        expect(
+            screen.getByRole('link', { name: /variación/i }),
+        ).toHaveAttribute('href', '/weddings/7/variance');
+    });
+
+    it('shows full-width mobile destinations and closes after selection', () => {
+        const closeNav = vi.fn();
+
+        render(
+            <PlanningNav
+                wedding={{ id: 7, name: 'Our Wedding' }}
+                variant="mobile"
+                onNavigate={closeNav}
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { name: 'Planificación' }),
+        ).toBeInTheDocument();
+
+        const destinations = screen.getAllByRole('link');
+        expect(destinations).toHaveLength(4);
+        destinations.forEach((destination) =>
+            expect(destination).toHaveClass('w-full'),
+        );
+
+        fireEvent.click(screen.getByRole('link', { name: /pronóstico/i }));
+        expect(closeNav).toHaveBeenCalledOnce();
     });
 });

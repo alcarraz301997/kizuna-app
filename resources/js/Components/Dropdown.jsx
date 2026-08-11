@@ -20,10 +20,12 @@ const Dropdown = ({ children }) => {
 
 const Trigger = ({ children }) => {
     const { open, setOpen, toggleOpen } = useContext(DropDownContext);
+    const trigger =
+        typeof children === 'function' ? children({ open }) : children;
 
     return (
         <>
-            <div onClick={toggleOpen}>{children}</div>
+            <div onClick={toggleOpen}>{trigger}</div>
 
             {open && (
                 <div
