@@ -25,7 +25,12 @@ return new class extends Migration
             $table->string('color', 7)->default('#6366f1');
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
-            $table->index(['category_template_id', 'parent_id', 'sort_order']);
+
+            // Added explicit custom index name to fit within MySQL's 64-character limit
+            $table->index(
+                ['category_template_id', 'parent_id', 'sort_order'],
+                'cat_tpl_items_parent_sort_idx'
+            );
         });
     }
 
