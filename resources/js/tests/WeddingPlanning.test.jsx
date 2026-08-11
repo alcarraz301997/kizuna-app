@@ -1,0 +1,76 @@
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import Workspace from '@/Pages/Weddings/Show';
+import Templates from '@/Pages/Weddings/CategoryTemplates';
+import Forecast from '@/Pages/Weddings/Forecast';
+import Variance from '@/Pages/Weddings/Variance';
+import PlanningNav from '@/Components/PlanningNav';
+
+vi.mock('@inertiajs/react', () => ({
+    Head: () => null,
+    Link: ({ children, ...props }) => <a {...props}>{children}</a>,
+    useForm: () => ({ post: vi.fn(), processing: false, data: {}, setData: vi.fn() }),
+}));
+
+vi.mock('@/Layouts/AuthenticatedLayout', () => ({
+    default: ({ header, children }) => <main><header>{header}</header>{children}</main>,
+}));
+
+describe('wedding planning pages', () => {
+    it('shows owner member management but keeps editor access read-only', () => {
+        const members = [
+            { id: 1, name: 'Owner', email: 'owner@example.test', role: 'owner' },
+            { id: 2, name: 'Editor', email: 'editor@example.test', role: 'editor' },
+        ];
+
+        const { rerender } = render(<Workspace wedding={{ id: 1, name: 'Our Wedding' }} members={members} role="owner" />);
+        expect(screen.getByRole('heading', { name: 'Our Wedding' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /agregar miembro/i })).toBeInTheDocument();
+        expect(screen.getAllByText('Editor').length).toBeGreaterThan(0);
+
+        rerender(<Workspace wedding={{ id: 1, name: 'Our Wedding' }} members={members} role="editor" />);
+        expect(screen.queryByRole('button', { name: /agregar miembro/i })).not.toBeInTheDocument();
+        expect(screen.getByText(/acceso de miembro/i)).toBeInTheDocument();
+    });
+
+    it('renders template actions and an accessible empty state', () => {
+        const { rerender } = render(<Templates templates={[]} />);
+        expect(screen.getByText(/aún no hay plantillas/i)).toBeInTheDocument();
+
+        rerender(<Templates templates={[{ id: 1, name: 'Reception', items: [{ name: 'Venue' }] }]} />);
+        expect(screen.getByText('Reception')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /aplicar reception/i })).toBeInTheDocument();
+        expect(screen.getByText('Venue')).toBeInTheDocument();
+    });
+
+    it('keeps dated, unscheduled, and empty forecast states distinct', () => {
+        const { rerender } = render(<Forecast forecast={{ dated: [{ state: 'past_due', contracted: 1000, paid_to_date: 250, balance: 750 }], unscheduled: [], totals: { contracted: 1000, paid_to_date: 250, balance: 750 } }} />);
+        expect(screen.getByText(/vencido/i)).toBeInTheDocument();
+        expect(screen.getAllByText('S/. 750.00').length).toBeGreaterThan(0);
+
+        rerender(<Forecast forecast={{ dated: [], unscheduled: [{ contracted: 300 }], totals: { contracted: 300, paid_to_date: 0, balance: 300 } }} />);
+        expect(screen.getByText(/sin fecha/i)).toBeInTheDocument();
+
+        rerender(<Forecast forecast={{ dated: [], unscheduled: [], totals: { contracted: 0, paid_to_date: 0, balance: 0 } }} />);
+        expect(screen.getByText(/no hay compromisos/i)).toBeInTheDocument();
+    });
+
+    it('shows distinct financial variances and an empty alert state', () => {
+        render(<Variance categories={[
+            { id: 1, name: 'Venue', planned: 100, contracted: 150, paid: 120, commitment_variance: 50, paid_variance: 20, alerts: ['commitment_over_budget', 'paid_over_budget'] },
+            { id: 2, name: 'Empty', planned: null, contracted: null, paid: null, commitment_variance: null, paid_variance: null, alerts: [] },
+        ]} />);
+        expect(screen.getByText('Venue')).toBeInTheDocument();
+        expect(screen.getByText(/sobre presupuesto contratado/i)).toBeInTheDocument();
+        expect(screen.getByText(/sobre presupuesto pagado/i)).toBeInTheDocument();
+        expect(screen.getByText('Empty')).toBeInTheDocument();
+        expect(screen.getByText(/sin alertas/i)).toBeInTheDocument();
+    });
+
+    it('exposes planning navigation for an admitted wedding only', () => {
+        render(<PlanningNav wedding={{ id: 7, name: 'Our Wedding' }} />);
+        expect(screen.getByRole('link', { name: /espacio de trabajo/i })).toHaveAttribute('href', '/weddings/7');
+        expect(screen.getByRole('link', { name: /pronóstico/i })).toHaveAttribute('href', '/weddings/7/forecast');
+        expect(screen.getByRole('link', { name: /variación/i })).toHaveAttribute('href', '/weddings/7/variance');
+    });
+});

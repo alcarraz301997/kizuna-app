@@ -20,6 +20,7 @@ class Vendor extends Model
         'payment_status',
         'notes',
         'user_id',
+        'wedding_id',
     ];
 
     protected function casts(): array
@@ -37,5 +38,10 @@ class Vendor extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function wedding(): BelongsTo
+    {
+        return $this->belongsTo(Wedding::class);
     }
 }

@@ -15,7 +15,7 @@ export default function Dashboard({ categories, totals }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
                         <div className="clay-card clay-card-indigo p-5 sm:p-6">
                             <p className="text-sm font-medium text-primary">Presupuesto Total</p>
                             <p className="mt-2 text-xl sm:text-2xl font-bold text-gray-900">
@@ -33,6 +33,14 @@ export default function Dashboard({ categories, totals }) {
                             <p className="mt-2 text-xl sm:text-2xl font-bold text-gray-900">
                                 {formatCurrency(totals.total_planned)}
                             </p>
+                        </div>
+                        <div className="clay-card clay-card-sky p-5 sm:p-6">
+                            <p className="text-sm font-medium text-primary">Contratado</p>
+                            <p className="mt-2 text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(totals.total_contracted || 0)}</p>
+                        </div>
+                        <div className="clay-card clay-card-emerald p-5 sm:p-6">
+                            <p className="text-sm font-medium text-success">Pagado</p>
+                            <p className="mt-2 text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(totals.total_paid || 0)}</p>
                         </div>
                         <div className="clay-card clay-card-emerald p-5 sm:p-6">
                             <p className="text-sm font-medium text-success">Restante</p>

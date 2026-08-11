@@ -22,6 +22,10 @@ class Expense extends Model
         'paid_date',
         'notes',
         'user_id',
+        'wedding_id',
+        'planned_amount',
+        'contracted_amount',
+        'due_date',
     ];
 
     protected function casts(): array
@@ -30,6 +34,9 @@ class Expense extends Model
             'status' => ExpenseStatus::class,
             'amount' => 'decimal:2',
             'paid_date' => 'date',
+            'planned_amount' => 'decimal:2',
+            'contracted_amount' => 'decimal:2',
+            'due_date' => 'date',
         ];
     }
 
@@ -56,5 +63,15 @@ class Expense extends Model
     public function split(): HasOne
     {
         return $this->hasOne(ExpenseSplit::class);
+    }
+
+    public function wedding(): BelongsTo
+    {
+        return $this->belongsTo(Wedding::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(ExpensePayment::class);
     }
 }

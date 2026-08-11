@@ -55,4 +55,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Table::class);
     }
+
+    public function weddings(): HasMany
+    {
+        return $this->hasMany(Wedding::class, 'owner_id');
+    }
+
+    public function weddingMemberships(): HasMany
+    {
+        return $this->hasMany(WeddingMember::class);
+    }
 }

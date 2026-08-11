@@ -15,6 +15,7 @@ class Table extends Model
         'name',
         'capacity',
         'user_id',
+        'wedding_id',
     ];
 
     protected function casts(): array
@@ -35,6 +36,11 @@ class Table extends Model
     public function guests(): HasMany
     {
         return $this->hasMany(Guest::class, 'table_id');
+    }
+
+    public function wedding(): BelongsTo
+    {
+        return $this->belongsTo(Wedding::class);
     }
 
     /**

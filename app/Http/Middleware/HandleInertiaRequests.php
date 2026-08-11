@@ -34,6 +34,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'wedding' => fn () => $request->user()?->weddingMemberships()->with('wedding:id,name')->first()?->wedding?->only('id', 'name'),
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
                 'error' => fn () => $request->session()->get('error'),

@@ -18,6 +18,7 @@ class Guest extends Model
         'rsvp_status',
         'table_id',
         'user_id',
+        'wedding_id',
     ];
 
     protected function casts(): array
@@ -35,5 +36,10 @@ class Guest extends Model
     public function table(): BelongsTo
     {
         return $this->belongsTo(Table::class);
+    }
+
+    public function wedding(): BelongsTo
+    {
+        return $this->belongsTo(Wedding::class);
     }
 }

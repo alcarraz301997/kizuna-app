@@ -16,12 +16,16 @@ class Category extends Model
         'budget_limit',
         'color',
         'user_id',
+        'wedding_id',
+        'parent_id',
+        'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
             'budget_limit' => 'decimal:2',
+            'sort_order' => 'integer',
         ];
     }
 
@@ -30,9 +34,24 @@ class Category extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function wedding(): BelongsTo
+    {
+        return $this->belongsTo(Wedding::class);
+    }
+
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     /**
