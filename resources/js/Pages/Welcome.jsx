@@ -216,7 +216,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <div className="flex items-center gap-2 text-gray-500 text-sm sm:text-base">
                                 <span className="font-semibold">Kizuna</span>
                                 <span className="text-sm">
-                                    — Laravel v{laravelVersion} • PHP v{phpVersion}
+                                    — Gestión de eventos
                                 </span>
                             </div>
                             <div className="text-sm text-gray-400">
