@@ -6,6 +6,7 @@ use App\Enums\ExpenseStatus;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Vendor;
+use App\Services\ExpenseCommitmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -144,7 +145,7 @@ class ExpenseController extends Controller
     /**
      * Show the form for editing the expense.
      */
-    public function edit(Request $request, Expense $expense): Response
+    public function edit(Request $request, Expense $expense, ExpenseCommitmentService $commitmentService): Response
     {
         $this->authorizeExpense($request, $expense);
 
@@ -193,6 +194,7 @@ class ExpenseController extends Controller
                 'notes' => $expense->notes,
                 'receipts_count' => $expense->receipts()->count(),
                 'split' => $split,
+                'wedding_id' => $expense->wedding_id,
             ],
             'categories' => $categories,
             'vendors' => $vendors,
@@ -202,6 +204,7 @@ class ExpenseController extends Controller
                 'label' => ucfirst($s->value),
             ]),
             'maxReceipts' => 5,
+            'commitment' => $commitmentService->summary($expense),
         ]);
     }
 

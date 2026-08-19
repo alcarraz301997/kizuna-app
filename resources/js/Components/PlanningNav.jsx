@@ -11,6 +11,7 @@ export default function PlanningNav({
     const links = [
         ['Espacio de trabajo', `/weddings/${wedding.id}`],
         ['Plantillas', `/weddings/${wedding.id}/category-templates`],
+        ['Resumen por categoría', `/weddings/${wedding.id}/category-rollups`],
         ['Pronóstico', `/weddings/${wedding.id}/forecast`],
         ['Variación', `/weddings/${wedding.id}/variance`],
     ];

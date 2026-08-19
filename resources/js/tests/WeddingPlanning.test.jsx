@@ -1,12 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
+import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import Workspace from '@/Pages/Weddings/Show';
 import Templates from '@/Pages/Weddings/CategoryTemplates';
+import CategoryRollups from '@/Pages/Weddings/CategoryRollups';
 import Forecast from '@/Pages/Weddings/Forecast';
 import Variance from '@/Pages/Weddings/Variance';
 import PlanningNav from '@/Components/PlanningNav';
 
-vi.mock('@inertiajs/react', () => ({
+const inertia = vi.hoisted(() => ({ post: vi.fn(), wedding: { id: 9, name: 'Nuestra boda' } }));
+
+vi.mock('@inertiajs/react', async () => ({
     Head: () => null,
     Link: ({ children, onClick, ...props }) => (
         <a
@@ -19,7 +23,19 @@ vi.mock('@inertiajs/react', () => ({
             {children}
         </a>
     ),
-    useForm: () => ({ post: vi.fn(), processing: false, data: {}, setData: vi.fn() }),
+    usePage: () => ({ props: { wedding: inertia.wedding } }),
+    useForm: (initialData = {}) => {
+        const [data, setDataState] = React.useState(initialData);
+        return {
+            data,
+            setData: (key, value) => setDataState((current) => ({ ...current, [key]: value })),
+            post: inertia.post,
+            patch: vi.fn(),
+            reset: vi.fn(),
+            errors: {},
+            processing: false,
+        };
+    },
 }));
 
 vi.mock('@/Layouts/AuthenticatedLayout', () => ({
@@ -51,6 +67,29 @@ describe('wedding planning pages', () => {
         expect(screen.getByText('Reception')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /aplicar reception/i })).toBeInTheDocument();
         expect(screen.getByText('Venue')).toBeInTheDocument();
+    });
+
+    it('submits a template with at least one item', () => {
+        inertia.post.mockClear();
+        render(<Templates templates={[]} />);
+
+        fireEvent.change(screen.getByLabelText('Nombre de la plantilla'), { target: { value: 'Ceremonia' } });
+        fireEvent.change(screen.getByLabelText('Nombre', { selector: '#template_item_0' }), { target: { value: 'Lugar' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Guardar plantilla' }));
+
+        expect(inertia.post).toHaveBeenCalledWith('/weddings/9/category-templates', expect.anything());
+    });
+
+    it('renders category rollups as a hierarchy with financial summaries', () => {
+        render(<CategoryRollups categories={[
+            { id: 1, name: 'Recepción', parent_id: null, planned: 1000, contracted: 1200, paid: 500 },
+            { id: 2, name: 'Catering', parent_id: 1, planned: 1000, contracted: 1200, paid: 500 },
+        ]} />);
+
+        expect(screen.getByRole('heading', { name: 'Resumen por categoría' })).toBeInTheDocument();
+        expect(screen.getByText('Recepción')).toBeInTheDocument();
+        expect(screen.getByText('Catering')).toBeInTheDocument();
+        expect(screen.getAllByText('S/. 1200.00')).toHaveLength(3);
     });
 
     it('keeps dated, unscheduled, and empty forecast states distinct', () => {
@@ -107,6 +146,9 @@ describe('wedding planning pages', () => {
             screen.getByRole('link', { name: /plantillas/i }),
         ).toHaveAttribute('href', '/weddings/7/category-templates');
         expect(
+            screen.getByRole('link', { name: /resumen por categoría/i }),
+        ).toHaveAttribute('href', '/weddings/7/category-rollups');
+        expect(
             screen.getByRole('link', { name: /pronóstico/i }),
         ).toHaveAttribute('href', '/weddings/7/forecast');
         expect(
@@ -130,7 +172,7 @@ describe('wedding planning pages', () => {
         ).toBeInTheDocument();
 
         const destinations = screen.getAllByRole('link');
-        expect(destinations).toHaveLength(4);
+        expect(destinations).toHaveLength(5);
         destinations.forEach((destination) =>
             expect(destination).toHaveClass('w-full'),
         );

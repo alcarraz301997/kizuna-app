@@ -14,7 +14,7 @@ const statusLabels = {
     paid: 'Pagado',
 };
 
-export default function Edit({ expense, categories, vendors, receipts, statuses, maxReceipts }) {
+export default function Edit({ expense, categories, vendors, receipts, statuses, maxReceipts, commitment: initialCommitment }) {
     const { data, setData, put, errors, processing } = useForm({
         category_id: expense.category_id,
         amount: expense.amount,
@@ -28,6 +28,25 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
 
     const [vendorMode, setVendorMode] = useState(expense.vendor_id ? 'select' : (expense.vendor ? 'text' : 'select'));
     const [receiptErrors, setReceiptErrors] = useState([]);
+    const [commitment, setCommitment] = useState(initialCommitment || { planned_amount: null, contracted_amount: null, paid_to_date: 0, balance: null, due_date: '' });
+    const commitmentForm = useForm({ planned_amount: commitment.planned_amount ?? '', contracted_amount: commitment.contracted_amount ?? '', due_date: commitment.due_date || '' });
+    const paymentForm = useForm({ amount: '', paid_on: '', kind: 'payment' });
+
+    const updateCommitment = (event) => {
+        event.preventDefault();
+        commitmentForm.patch(`/weddings/${expense.wedding_id}/expenses/${expense.id}/commitment`, {
+            onSuccess: (page) => page?.props?.commitment && setCommitment(page.props.commitment),
+        });
+    };
+    const addPayment = (event) => {
+        event.preventDefault();
+        paymentForm.post(`/weddings/${expense.wedding_id}/expenses/${expense.id}/payments`, {
+            onSuccess: (page) => {
+                if (page?.props?.commitment) setCommitment(page.props.commitment);
+                paymentForm.reset();
+            },
+        });
+    };
 
     const handleVendorSelect = (e) => {
         const mode = e.target.value;
@@ -275,6 +294,18 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                     </Link>
                                 </div>
                             </form>
+                        </div>
+
+                        <div className="clay-card p-6 sm:p-8">
+                            <h3 className="mb-4 text-lg font-semibold text-gray-900">Compromiso y pagos</h3>
+                            <div className="mb-6 grid gap-3 sm:grid-cols-2"><div><span className="text-sm text-gray-500">Pagado hasta hoy</span><p className="text-xl font-bold">S/. {Number(commitment.paid_to_date || 0).toFixed(2)}</p></div><div><span className="text-sm text-gray-500">Saldo</span><p className="text-xl font-bold">{commitment.balance === null ? 'Sin monto contratado' : `S/. ${Number(commitment.balance).toFixed(2)}`}</p></div></div>
+                            <form onSubmit={updateCommitment} className="grid gap-4 border-b border-gray-200/60 pb-6 sm:grid-cols-3">
+                                <div><InputLabel htmlFor="planned_amount" value="Monto planeado" /><TextInput id="planned_amount" type="number" min="0" step="0.01" className="mt-1 block w-full" value={commitmentForm.data.planned_amount} onChange={(event) => commitmentForm.setData('planned_amount', event.target.value)} /><InputError className="mt-1" message={commitmentForm.errors.planned_amount} /></div>
+                                <div><InputLabel htmlFor="contracted_amount" value="Monto contratado" /><TextInput id="contracted_amount" type="number" min="0" step="0.01" className="mt-1 block w-full" value={commitmentForm.data.contracted_amount} onChange={(event) => commitmentForm.setData('contracted_amount', event.target.value)} /><InputError className="mt-1" message={commitmentForm.errors.contracted_amount} /></div>
+                                <div><InputLabel htmlFor="due_date" value="Fecha de vencimiento" /><TextInput id="due_date" type="date" className="mt-1 block w-full" value={commitmentForm.data.due_date} onChange={(event) => commitmentForm.setData('due_date', event.target.value)} /><InputError className="mt-1" message={commitmentForm.errors.due_date} /></div>
+                                <PrimaryButton disabled={commitmentForm.processing}>Guardar compromiso</PrimaryButton>
+                            </form>
+                            <form onSubmit={addPayment} className="mt-6 grid gap-4 sm:grid-cols-3"><div><InputLabel htmlFor="payment_amount" value="Nuevo pago" /><TextInput id="payment_amount" type="number" min="0" step="0.01" className="mt-1 block w-full" value={paymentForm.data.amount} onChange={(event) => paymentForm.setData('amount', event.target.value)} required /><InputError className="mt-1" message={paymentForm.errors.amount} /></div><div><InputLabel htmlFor="payment_date" value="Fecha del pago" /><TextInput id="payment_date" type="date" className="mt-1 block w-full" value={paymentForm.data.paid_on} onChange={(event) => paymentForm.setData('paid_on', event.target.value)} /><InputError className="mt-1" message={paymentForm.errors.paid_on} /></div><div className="self-end"><PrimaryButton disabled={paymentForm.processing}>Registrar pago</PrimaryButton></div></form>
                         </div>
 
                         <div className="clay-card p-6 sm:p-8">
