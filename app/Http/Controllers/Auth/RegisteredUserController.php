@@ -45,6 +45,8 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        app(\App\Services\WeddingMembershipService::class)->createForOwner($user, 'Mi Boda');
+
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));

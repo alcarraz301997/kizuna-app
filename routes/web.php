@@ -60,6 +60,21 @@ Route::middleware('auth')->group(function () {
 
     Route::post('weddings/{wedding}/expenses/{expense}/split', [ExpenseSplitController::class, 'store'])->name('weddings.expenses.split.store');
     Route::put('weddings/{wedding}/expenses/{expense}/split', [ExpenseSplitController::class, 'update'])->name('weddings.expenses.split.update');
+
+    // Auto-redirects for legacy / direct navigation (/categories, /expenses, etc.)
+    foreach (['categories', 'expenses', 'vendors', 'tables', 'guests'] as $resource) {
+        Route::get("/{$resource}", function (Request $request) use ($resource) {
+            $membership = $request->user()->weddingMemberships()->with('wedding')->first();
+            $wedding = $membership?->wedding ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($request->user(), 'Mi Boda');
+            return redirect()->route("weddings.{$resource}.index", $wedding);
+        });
+
+        Route::get("/{$resource}/create", function (Request $request) use ($resource) {
+            $membership = $request->user()->weddingMemberships()->with('wedding')->first();
+            $wedding = $membership?->wedding ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($request->user(), 'Mi Boda');
+            return redirect()->route("weddings.{$resource}.create", $wedding);
+        });
+    }
 });
 
 require __DIR__.'/auth.php';
