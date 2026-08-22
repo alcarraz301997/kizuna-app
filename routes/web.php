@@ -64,14 +64,20 @@ Route::middleware('auth')->group(function () {
     // Auto-redirects for legacy / direct navigation (/categories, /expenses, etc.)
     foreach (['categories', 'expenses', 'vendors', 'tables', 'guests'] as $resource) {
         Route::get("/{$resource}", function (Request $request) use ($resource) {
-            $membership = $request->user()->weddingMemberships()->with('wedding')->first();
-            $wedding = $membership?->wedding ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($request->user(), 'Mi Boda');
+            $user = $request->user();
+            $wedding = $user->weddings()->first()
+                ?? $user->weddingMemberships()->with('wedding')->first()?->wedding
+                ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($user, 'Mi Boda');
+
             return redirect()->route("weddings.{$resource}.index", $wedding);
         });
 
         Route::get("/{$resource}/create", function (Request $request) use ($resource) {
-            $membership = $request->user()->weddingMemberships()->with('wedding')->first();
-            $wedding = $membership?->wedding ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($request->user(), 'Mi Boda');
+            $user = $request->user();
+            $wedding = $user->weddings()->first()
+                ?? $user->weddingMemberships()->with('wedding')->first()?->wedding
+                ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($user, 'Mi Boda');
+
             return redirect()->route("weddings.{$resource}.create", $wedding);
         });
     }

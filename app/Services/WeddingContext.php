@@ -9,13 +9,34 @@ class WeddingContext
 {
     public function authorize(Request $request, Wedding $wedding): Wedding
     {
-        abort_unless($wedding->members()->where('user_id', $request->user()->id)->exists(), 403);
+        $userId = $request->user()?->id;
+
+        if (! $userId) {
+            abort(403);
+        }
+
+        $isMember = $wedding->members()->where('user_id', $userId)->exists()
+            || $wedding->owner_id === $userId;
+
+        if ($wedding->owner_id === $userId && ! $wedding->members()->where('user_id', $userId)->exists()) {
+            $wedding->members()->firstOrCreate(['user_id' => $userId], ['role' => 'owner']);
+            $isMember = true;
+        }
+
+        abort_unless($isMember, 403);
 
         return $wedding;
     }
 
     public function isOwner(Request $request, Wedding $wedding): bool
     {
-        return $wedding->members()->where('user_id', $request->user()->id)->where('role', 'owner')->exists();
+        $userId = $request->user()?->id;
+
+        if (! $userId) {
+            return false;
+        }
+
+        return $wedding->owner_id === $userId
+            || $wedding->members()->where('user_id', $userId)->where('role', 'owner')->exists();
     }
 }
