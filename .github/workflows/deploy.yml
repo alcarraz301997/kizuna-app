@@ -1,0 +1,70 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+      - deploy
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, bcmath, zip, gd
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Node Dependencies & Build Assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy via SSH to Hostinger
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT || 65002 }}
+          script: |
+            cd ${{ secrets.HOSTINGER_PROJECT_PATH }}
+
+            # Activar modo mantenimiento
+            php artisan down || true
+
+            # Obtener últimos cambios
+            git pull origin main
+
+            # Instalar dependencias de producción en PHP
+            composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+            # Compilar assets en el servidor (si cuenta con Node)
+            if command -v npm &> /dev/null; then
+              npm ci --production=false
+              npm run build
+            fi
+
+            # Ejecutar migraciones
+            php artisan migrate --force
+
+            # Limpiar y regenerar cachés para máximo rendimiento
+            php artisan optimize:clear
+            php artisan optimize
+            php artisan view:cache
+
+            # Desactivar modo mantenimiento
+            php artisan up
