@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ vendor, paymentStatuses }) {
+export default function Edit({ wedding, vendor, paymentStatuses }) {
     const { data, setData, put, errors, processing } = useForm({
         name: vendor.name,
         service_category: vendor.service_category,
@@ -17,7 +17,7 @@ export default function Edit({ vendor, paymentStatuses }) {
 
     const submit = (e) => {
         e.preventDefault();
-        put(route('vendors.update', vendor.id));
+        put(route('weddings.vendors.update', [wedding.id, vendor.id]));
     };
 
     return (
@@ -155,7 +155,7 @@ export default function Edit({ vendor, paymentStatuses }) {
                                     Actualizar Proveedor
                                 </PrimaryButton>
                                 <Link
-                                    href={route('vendors.index')}
+                                    href={route('weddings.vendors.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

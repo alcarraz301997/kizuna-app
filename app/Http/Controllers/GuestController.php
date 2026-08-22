@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\RsvpStatus;
 use App\Models\Guest;
 use App\Models\Table;
+use App\Models\Wedding;
+use App\Services\WeddingContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +20,11 @@ class GuestController extends Controller
     /**
      * Display a listing of the guests with RSVP counts.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
-        $guests = $request->user()->guests()
+        $context->authorize($request, $wedding);
+
+        $guests = $wedding->guests()
             ->with('table')
             ->orderBy('name')
             ->get()
@@ -45,25 +49,31 @@ class GuestController extends Controller
         return Inertia::render('Guests/Index', [
             'guests' => $guests,
             'counts' => $counts,
+            'wedding' => $wedding,
         ]);
     }
 
     /**
      * Show the form for creating a new guest.
      */
-    public function create(Request $request): Response
+    public function create(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
+        $context->authorize($request, $wedding);
+
         return Inertia::render('Guests/Create', [
-            'tables' => $this->tablesForSelect($request),
+            'tables' => $this->tablesForSelect($wedding),
             'rsvpStatuses' => $this->rsvpStatusOptions(),
+            'wedding' => $wedding,
         ]);
     }
 
     /**
      * Store a newly created guest.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
+        $context->authorize($request, $wedding);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -72,33 +82,37 @@ class GuestController extends Controller
             'table_id' => ['nullable', 'integer', 'exists:tables,id'],
         ]);
 
-        // If a table is selected, verify ownership and capacity.
+        // If a table is selected, verify it belongs to the wedding and has capacity.
         if (! empty($validated['table_id'])) {
-            $table = $this->authorizeAndCheckCapacity($request, $validated['table_id']);
-            if ($table instanceof RedirectResponse) {
-                return $table;
+            $result = $this->authorizeAndCheckCapacity($wedding, $validated['table_id']);
+            if ($result instanceof RedirectResponse) {
+                return $result;
             }
         }
 
-        $request->user()->guests()->create($validated);
+        $wedding->guests()->create([
+            ...$validated,
+            'user_id' => $request->user()->id,
+        ]);
 
-        return Redirect::route('guests.index');
+        return Redirect::route('weddings.guests.index', $wedding);
     }
 
     /**
      * Display the guest (redirect to index since Inertia doesn't use show).
      */
-    public function show(): RedirectResponse
+    public function show(Wedding $wedding): RedirectResponse
     {
-        return Redirect::route('guests.index');
+        return Redirect::route('weddings.guests.index', $wedding);
     }
 
     /**
      * Show the form for editing the guest.
      */
-    public function edit(Request $request, Guest $guest): Response
+    public function edit(Request $request, Wedding $wedding, Guest $guest, WeddingContext $context): Response
     {
-        $this->authorizeGuest($request, $guest);
+        $context->authorize($request, $wedding);
+        $this->authorizeGuest($wedding, $guest);
 
         return Inertia::render('Guests/Edit', [
             'guest' => [
@@ -109,17 +123,19 @@ class GuestController extends Controller
                 'rsvp_status' => $guest->rsvp_status->value,
                 'table_id' => $guest->table_id,
             ],
-            'tables' => $this->tablesForSelect($request),
+            'tables' => $this->tablesForSelect($wedding),
             'rsvpStatuses' => $this->rsvpStatusOptions(),
+            'wedding' => $wedding,
         ]);
     }
 
     /**
      * Update the guest.
      */
-    public function update(Request $request, Guest $guest): RedirectResponse
+    public function update(Request $request, Wedding $wedding, Guest $guest, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeGuest($request, $guest);
+        $context->authorize($request, $wedding);
+        $this->authorizeGuest($wedding, $guest);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -129,37 +145,40 @@ class GuestController extends Controller
             'table_id' => ['nullable', 'integer', 'exists:tables,id'],
         ]);
 
-        // If a table is selected, verify ownership and capacity.
+        // If a table is selected, verify it belongs to the wedding and has capacity.
         if (! empty($validated['table_id'])) {
-            $table = $this->authorizeAndCheckCapacity($request, $validated['table_id'], $guest);
-            if ($table instanceof RedirectResponse) {
-                return $table;
+            $result = $this->authorizeAndCheckCapacity($wedding, $validated['table_id'], $guest);
+            if ($result instanceof RedirectResponse) {
+                return $result;
             }
         }
 
         $guest->update($validated);
 
-        return Redirect::route('guests.index');
+        return Redirect::route('weddings.guests.index', $wedding);
     }
 
     /**
      * Remove the guest.
      */
-    public function destroy(Request $request, Guest $guest): RedirectResponse
+    public function destroy(Request $request, Wedding $wedding, Guest $guest, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeGuest($request, $guest);
+        $context->authorize($request, $wedding);
+        $this->authorizeGuest($wedding, $guest);
 
         $guest->delete();
 
-        return Redirect::route('guests.index');
+        return Redirect::route('weddings.guests.index', $wedding);
     }
 
     /**
      * Export the guest list as PDF.
      */
-    public function export(Request $request): HttpResponse
+    public function export(Request $request, Wedding $wedding, WeddingContext $context): HttpResponse
     {
-        $guests = $request->user()->guests()
+        $context->authorize($request, $wedding);
+
+        $guests = $wedding->guests()
             ->with('table')
             ->orderBy('name')
             ->get();
@@ -173,31 +192,31 @@ class GuestController extends Controller
     }
 
     /**
-     * Ensure the guest belongs to the authenticated user.
+     * Ensure the guest belongs to the wedding.
      */
-    private function authorizeGuest(Request $request, Guest $guest): void
+    private function authorizeGuest(Wedding $wedding, Guest $guest): void
     {
-        if ($guest->user_id !== $request->user()->id) {
+        if ($guest->wedding_id !== $wedding->id) {
             abort(403);
         }
     }
 
     /**
-     * Validate the table belongs to the authenticated user and has capacity.
+     * Validate the table belongs to the wedding and has capacity.
      *
      * Returns the Table model on success, or a RedirectResponse on failure.
      */
     private function authorizeAndCheckCapacity(
-        Request $request,
+        Wedding $wedding,
         int $tableId,
         ?Guest $excludeGuest = null,
     ): Table|RedirectResponse {
-        $table = Table::withCount('guests')->find($tableId);
+        $table = $wedding->tables()->withCount('guests')->find($tableId);
 
-        if (! $table || $table->user_id !== $request->user()->id) {
+        if (! $table) {
             return Redirect::back()
                 ->withInput()
-                ->with('error', 'La mesa seleccionada no es válida.');
+                ->with('error', 'La mesa seleccionada no es válida para esta boda.');
         }
 
         // When updating a guest, don't count that guest's own spot against capacity.
@@ -216,11 +235,11 @@ class GuestController extends Controller
     }
 
     /**
-     * Build the tables dropdown options for the authenticated user.
+     * Build the tables dropdown options for the wedding.
      */
-    private function tablesForSelect(Request $request): array
+    private function tablesForSelect(Wedding $wedding): array
     {
-        return $request->user()->tables()
+        return $wedding->tables()
             ->withCount('guests')
             ->orderBy('name')
             ->get()

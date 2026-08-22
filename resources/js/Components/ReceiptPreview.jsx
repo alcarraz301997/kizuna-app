@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 
-export default function ReceiptPreview({ receipts = [] }) {
+export default function ReceiptPreview({ weddingId, receipts = [] }) {
     const { delete: destroy, processing } = useForm({});
 
     const isImage = (mimeType) => {
@@ -15,7 +15,7 @@ export default function ReceiptPreview({ receipts = [] }) {
 
     const handleDelete = (receiptId) => {
         if (confirm('¿Eliminar este adjunto? Esta acción no se puede deshacer.')) {
-            destroy(route('receipts.destroy', receiptId), {
+            destroy(route('weddings.receipts.destroy', [weddingId, receiptId]), {
                 preserveScroll: true,
             });
         }

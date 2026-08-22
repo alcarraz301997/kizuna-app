@@ -21,7 +21,7 @@ const SPLIT_LABELS = {
  *   standalone  — if true, wraps in its own form with submit button
  *   onSaved     — callback after successful save (standalone mode)
  */
-export default function SplitForm({ expenseId, amount = 0, split = null, standalone = true, onSaved }) {
+export default function SplitForm({ weddingId, expenseId, amount = 0, split = null, standalone = true, onSaved }) {
     const [splitType, setSplitType] = useState(split?.split_type || '');
     const [personALabel, setPersonALabel] = useState(split?.person_a_label || 'Él');
     const [personBLabel, setPersonBLabel] = useState(split?.person_b_label || 'Ella');
@@ -86,8 +86,8 @@ export default function SplitForm({ expenseId, amount = 0, split = null, standal
         e.preventDefault();
 
         const url = split
-            ? route('expenses.split.update', expenseId)
-            : route('expenses.split.store', expenseId);
+            ? route('weddings.expenses.split.update', [weddingId, expenseId])
+            : route('weddings.expenses.split.store', [weddingId, expenseId]);
 
         const method = split ? put : post;
 

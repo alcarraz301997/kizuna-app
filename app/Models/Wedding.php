@@ -35,6 +35,21 @@ class Wedding extends Model
         return $this->hasMany(Expense::class);
     }
 
+    public function vendors(): HasMany
+    {
+        return $this->hasMany(Vendor::class);
+    }
+
+    public function tables(): HasMany
+    {
+        return $this->hasMany(Table::class);
+    }
+
+    public function guests(): HasMany
+    {
+        return $this->hasMany(Guest::class);
+    }
+
     public function categoryTemplates(): HasMany
     {
         return $this->hasMany(CategoryTemplate::class);

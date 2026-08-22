@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\VendorPaymentStatus;
 use App\Models\Vendor;
+use App\Models\Wedding;
+use App\Services\WeddingContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -15,9 +17,11 @@ class VendorController extends Controller
     /**
      * Display a listing of the vendors with optional service_category filter.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
-        $query = $request->user()->vendors()->withCount('expenses')->orderBy('name');
+        $context->authorize($request, $wedding);
+
+        $query = $wedding->vendors()->withCount('expenses')->orderBy('name');
 
         if ($request->filled('service_category')) {
             $query->where('service_category', $request->service_category);
@@ -34,7 +38,7 @@ class VendorController extends Controller
             'expenses_count' => $v->expenses_count,
         ]);
 
-        $serviceCategories = $request->user()->vendors()
+        $serviceCategories = $wedding->vendors()
             ->select('service_category')
             ->distinct()
             ->orderBy('service_category')
@@ -43,6 +47,7 @@ class VendorController extends Controller
         return Inertia::render('Vendors/Index', [
             'vendors' => $vendors,
             'serviceCategories' => $serviceCategories,
+            'wedding' => $wedding,
             'filters' => [
                 'service_category' => $request->service_category,
             ],
@@ -52,9 +57,12 @@ class VendorController extends Controller
     /**
      * Show the form for creating a new vendor.
      */
-    public function create(): Response
+    public function create(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
+        $context->authorize($request, $wedding);
+
         return Inertia::render('Vendors/Create', [
+            'wedding' => $wedding,
             'paymentStatuses' => collect(VendorPaymentStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => match ($s) {
@@ -69,10 +77,12 @@ class VendorController extends Controller
     /**
      * Store a newly created vendor.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
+        $context->authorize($request, $wedding);
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:vendors,name,NULL,id,user_id,' . $request->user()->id],
+            'name' => ['required', 'string', 'max:255', 'unique:vendors,name,NULL,id,wedding_id,' . $wedding->id],
             'service_category' => ['required', 'string', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'contact_email' => ['nullable', 'email', 'max:255'],
@@ -80,25 +90,29 @@ class VendorController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $request->user()->vendors()->create($validated);
+        $wedding->vendors()->create([
+            ...$validated,
+            'user_id' => $request->user()->id,
+        ]);
 
-        return Redirect::route('vendors.index');
+        return Redirect::route('weddings.vendors.index', $wedding);
     }
 
     /**
      * Display the vendor (redirect to index since Inertia doesn't use show).
      */
-    public function show(): RedirectResponse
+    public function show(Wedding $wedding): RedirectResponse
     {
-        return Redirect::route('vendors.index');
+        return Redirect::route('weddings.vendors.index', $wedding);
     }
 
     /**
      * Show the form for editing the vendor.
      */
-    public function edit(Request $request, Vendor $vendor): Response
+    public function edit(Request $request, Wedding $wedding, Vendor $vendor, WeddingContext $context): Response
     {
-        $this->authorizeVendor($request, $vendor);
+        $context->authorize($request, $wedding);
+        $this->authorizeVendor($wedding, $vendor);
 
         return Inertia::render('Vendors/Edit', [
             'vendor' => [
@@ -110,6 +124,7 @@ class VendorController extends Controller
                 'payment_status' => $vendor->payment_status->value,
                 'notes' => $vendor->notes,
             ],
+            'wedding' => $wedding,
             'paymentStatuses' => collect(VendorPaymentStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => match ($s) {
@@ -124,12 +139,13 @@ class VendorController extends Controller
     /**
      * Update the vendor.
      */
-    public function update(Request $request, Vendor $vendor): RedirectResponse
+    public function update(Request $request, Wedding $wedding, Vendor $vendor, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeVendor($request, $vendor);
+        $context->authorize($request, $wedding);
+        $this->authorizeVendor($wedding, $vendor);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:vendors,name,' . $vendor->id . ',id,user_id,' . $request->user()->id],
+            'name' => ['required', 'string', 'max:255', 'unique:vendors,name,' . $vendor->id . ',id,wedding_id,' . $wedding->id],
             'service_category' => ['required', 'string', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'contact_email' => ['nullable', 'email', 'max:255'],
@@ -139,32 +155,33 @@ class VendorController extends Controller
 
         $vendor->update($validated);
 
-        return Redirect::route('vendors.index');
+        return Redirect::route('weddings.vendors.index', $wedding);
     }
 
     /**
      * Remove the vendor (blocked if expenses exist).
      */
-    public function destroy(Request $request, Vendor $vendor): RedirectResponse
+    public function destroy(Request $request, Wedding $wedding, Vendor $vendor, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeVendor($request, $vendor);
+        $context->authorize($request, $wedding);
+        $this->authorizeVendor($wedding, $vendor);
 
         if ($vendor->expenses()->exists()) {
-            return Redirect::route('vendors.index')
+            return Redirect::route('weddings.vendors.index', $wedding)
                 ->with('error', 'Existen gastos vinculados a este proveedor. Elimina o reasigna los gastos primero.');
         }
 
         $vendor->delete();
 
-        return Redirect::route('vendors.index');
+        return Redirect::route('weddings.vendors.index', $wedding);
     }
 
     /**
-     * Ensure the vendor belongs to the authenticated user.
+     * Ensure the vendor belongs to the wedding.
      */
-    private function authorizeVendor(Request $request, Vendor $vendor): void
+    private function authorizeVendor(Wedding $wedding, Vendor $vendor): void
     {
-        if ($vendor->user_id !== $request->user()->id) {
+        if ($vendor->wedding_id !== $wedding->id) {
             abort(403);
         }
     }

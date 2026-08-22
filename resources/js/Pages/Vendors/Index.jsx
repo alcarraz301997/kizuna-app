@@ -16,18 +16,18 @@ const paymentStatusColors = {
     pagado_completo: 'bg-emerald-100 text-emerald-800',
 };
 
-export default function Index({ vendors, serviceCategories, filters }) {
+export default function Index({ wedding, vendors, serviceCategories, filters }) {
     const flash = usePage().props.flash;
     const { delete: destroy, processing, get } = useForm();
 
     const handleDelete = (id) => {
         if (confirm('¿Estás seguro de que deseas eliminar este proveedor?')) {
-            destroy(route('vendors.destroy', id));
+            destroy(route('weddings.vendors.destroy', [wedding.id, id]));
         }
     };
 
     const handleFilter = (category) => {
-        get(route('vendors.index', { service_category: category || null }), {
+        get(route('weddings.vendors.index', { wedding: wedding.id, service_category: category || null }), {
             preserveState: true,
         });
     };
@@ -85,7 +85,7 @@ export default function Index({ vendors, serviceCategories, filters }) {
     const rowActions = (row) => (
         <>
             <Link
-                href={route('vendors.edit', row.id)}
+                href={route('weddings.vendors.edit', [wedding.id, row.id])}
                 className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
             >
                 Editar
@@ -106,7 +106,7 @@ export default function Index({ vendors, serviceCategories, filters }) {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Proveedores
                     </h2>
-                    <Link href={route('vendors.create')}>
+                    <Link href={route('weddings.vendors.create', wedding.id)}>
                         <PrimaryButton>Agregar Proveedor</PrimaryButton>
                     </Link>
                 </div>
@@ -162,7 +162,7 @@ export default function Index({ vendors, serviceCategories, filters }) {
                         rowKey={(row) => row.id}
                         actions={rowActions}
                         emptyMessage="Aún no hay proveedores."
-                        emptyLinkHref={route('vendors.create')}
+                        emptyLinkHref={route('weddings.vendors.create', wedding.id)}
                         emptyLinkText="Crea uno"
                     />
                 </div>

@@ -5,13 +5,13 @@ import ResponsiveTable from '@/Components/ResponsiveTable';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
-export default function Index({ categories }) {
+export default function Index({ wedding, categories }) {
     const flash = usePage().props.flash;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
         if (confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
-            destroy(route('categories.destroy', id));
+            destroy(route('weddings.categories.destroy', [wedding.id, id]));
         }
     };
 
@@ -59,7 +59,7 @@ export default function Index({ categories }) {
     const rowActions = (row) => (
         <>
             <Link
-                href={route('categories.edit', row.id)}
+                href={route('weddings.categories.edit', [wedding.id, row.id])}
                 className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
             >
                 Editar
@@ -80,7 +80,7 @@ export default function Index({ categories }) {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Categorías
                     </h2>
-                    <Link href={route('categories.create')}>
+                    <Link href={route('weddings.categories.create', wedding.id)}>
                         <PrimaryButton>Agregar Categoría</PrimaryButton>
                     </Link>
                 </div>
@@ -108,7 +108,7 @@ export default function Index({ categories }) {
                         rowKey={(row) => row.id}
                         actions={rowActions}
                         emptyMessage="Aún no hay categorías."
-                        emptyLinkHref={route('categories.create')}
+                        emptyLinkHref={route('weddings.categories.create', wedding.id)}
                         emptyLinkText="Crea una"
                     />
                 </div>

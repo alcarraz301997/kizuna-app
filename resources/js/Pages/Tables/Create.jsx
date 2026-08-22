@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create() {
+export default function Create({ wedding }) {
     const { data, setData, post, errors, processing } = useForm({
         name: '',
         capacity: '',
@@ -13,7 +13,7 @@ export default function Create() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('tables.store'));
+        post(route('weddings.tables.store', wedding.id));
     };
 
     return (
@@ -66,7 +66,7 @@ export default function Create() {
                                     Crear Mesa
                                 </PrimaryButton>
                                 <Link
-                                    href={route('tables.index')}
+                                    href={route('weddings.tables.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

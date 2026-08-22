@@ -47,19 +47,19 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('categories', CategoryController::class);
-    Route::resource('expenses', ExpenseController::class);
-    Route::resource('vendors', VendorController::class);
+    // Resources nested under wedding
+    Route::resource('weddings/{wedding}/categories', CategoryController::class)->names('weddings.categories');
+    Route::resource('weddings/{wedding}/expenses', ExpenseController::class)->names('weddings.expenses');
+    Route::resource('weddings/{wedding}/vendors', VendorController::class)->names('weddings.vendors');
+    Route::resource('weddings/{wedding}/tables', TableController::class)->names('weddings.tables');
+    Route::resource('weddings/{wedding}/guests', GuestController::class)->names('weddings.guests');
+    Route::get('weddings/{wedding}/guests/export/pdf', [GuestController::class, 'export'])->name('weddings.guests.export.pdf');
 
-    Route::post('expenses/{expense}/receipts', [ReceiptController::class, 'store'])->name('expenses.receipts.store');
-    Route::delete('receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('receipts.destroy');
+    Route::post('weddings/{wedding}/expenses/{expense}/receipts', [ReceiptController::class, 'store'])->name('weddings.expenses.receipts.store');
+    Route::delete('weddings/{wedding}/receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('weddings.receipts.destroy');
 
-    Route::post('expenses/{expense}/split', [ExpenseSplitController::class, 'store'])->name('expenses.split.store');
-    Route::put('expenses/{expense}/split', [ExpenseSplitController::class, 'update'])->name('expenses.split.update');
-
-    Route::resource('tables', TableController::class);
-    Route::resource('guests', GuestController::class);
-    Route::get('guests/export/pdf', [GuestController::class, 'export'])->name('guests.export.pdf');
+    Route::post('weddings/{wedding}/expenses/{expense}/split', [ExpenseSplitController::class, 'store'])->name('weddings.expenses.split.store');
+    Route::put('weddings/{wedding}/expenses/{expense}/split', [ExpenseSplitController::class, 'update'])->name('weddings.expenses.split.update');
 });
 
 require __DIR__.'/auth.php';
