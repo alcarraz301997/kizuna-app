@@ -4,13 +4,13 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import ResponsiveTable from '@/Components/ResponsiveTable';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
-export default function Index({ tables }) {
+export default function Index({ wedding, tables }) {
     const { delete: destroy, processing } = useForm();
     const { props } = usePage();
 
     const handleDelete = (id) => {
         if (confirm('¿Estás seguro de que deseas eliminar esta mesa?')) {
-            destroy(route('tables.destroy', id));
+            destroy(route('weddings.tables.destroy', [wedding.id, id]));
         }
     };
 
@@ -64,7 +64,7 @@ export default function Index({ tables }) {
     const rowActions = (row) => (
         <>
             <Link
-                href={route('tables.edit', row.id)}
+                href={route('weddings.tables.edit', [wedding.id, row.id])}
                 className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
             >
                 Editar
@@ -85,7 +85,7 @@ export default function Index({ tables }) {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Mesas
                     </h2>
-                    <Link href={route('tables.create')}>
+                    <Link href={route('weddings.tables.create', wedding.id)}>
                         <PrimaryButton>Crear Mesa</PrimaryButton>
                     </Link>
                 </div>
@@ -112,7 +112,7 @@ export default function Index({ tables }) {
                         rowKey={(row) => row.id}
                         actions={rowActions}
                         emptyMessage="Aún no hay mesas."
-                        emptyLinkHref={route('tables.create')}
+                        emptyLinkHref={route('weddings.tables.create', wedding.id)}
                         emptyLinkText="Crea una"
                     />
                 </div>

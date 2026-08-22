@@ -12,7 +12,7 @@ const statusLabels = {
     paid: 'Pagado',
 };
 
-export default function Create({ categories, vendors, statuses }) {
+export default function Create({ wedding, categories, vendors, statuses }) {
     const { data, setData, post, errors, processing } = useForm({
         category_id: '',
         amount: '',
@@ -103,7 +103,7 @@ export default function Create({ categories, vendors, statuses }) {
 
         const formData = { ...data, ...vendorData };
 
-        post(route('expenses.store'), {
+        post(route('weddings.expenses.store', wedding.id), {
             data: formData,
             forceFormData: true,
             onSuccess: () => {
@@ -441,7 +441,7 @@ export default function Create({ categories, vendors, statuses }) {
                                     Crear Gasto
                                 </PrimaryButton>
                                 <Link
-                                    href={route('expenses.index')}
+                                    href={route('weddings.expenses.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

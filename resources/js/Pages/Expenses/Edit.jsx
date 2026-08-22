@@ -14,7 +14,7 @@ const statusLabels = {
     paid: 'Pagado',
 };
 
-export default function Edit({ expense, categories, vendors, receipts, statuses, maxReceipts, commitment: initialCommitment }) {
+export default function Edit({ wedding, expense, categories, vendors, receipts, statuses, maxReceipts, commitment: initialCommitment }) {
     const { data, setData, put, errors, processing } = useForm({
         category_id: expense.category_id,
         amount: expense.amount,
@@ -103,7 +103,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
 
         const formData = { ...data, ...vendorData };
 
-        put(route('expenses.update', expense.id), {
+        put(route('weddings.expenses.update', [wedding.id, expense.id]), {
             data: formData,
             forceFormData: true,
             onSuccess: () => {
@@ -125,7 +125,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
             const formData = new FormData();
             formData.append('receipt', data.receipt_files[index]);
 
-            fetch(route('expenses.receipts.store', expense.id), {
+            fetch(route('weddings.expenses.receipts.store', [wedding.id, expense.id]), {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -287,7 +287,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                         Actualizar Gasto
                                     </PrimaryButton>
                                     <Link
-                                        href={route('expenses.index')}
+                                        href={route('weddings.expenses.index', wedding.id)}
                                         className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                     >
                                         Cancelar
@@ -313,7 +313,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                 Adjuntos ({receiptCount}/{maxReceipts})
                             </h3>
 
-                            <ReceiptPreview receipts={receipts} />
+                            <ReceiptPreview weddingId={wedding.id} receipts={receipts} />
 
                             {canUploadMore && (
                                 <div className="mt-6 border-t border-gray-200/50 pt-4">
@@ -401,6 +401,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                         </summary>
                                         <div className="mt-4">
                                             <SplitForm
+                                                weddingId={wedding.id}
                                                 expenseId={expense.id}
                                                 amount={expense.amount}
                                                 split={expense.split}
@@ -412,6 +413,7 @@ export default function Edit({ expense, categories, vendors, receipts, statuses,
                                 </>
                             ) : (
                                 <SplitForm
+                                    weddingId={wedding.id}
                                     expenseId={expense.id}
                                     amount={expense.amount}
                                     split={null}

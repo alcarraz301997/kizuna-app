@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Table;
+use App\Models\Wedding;
+use App\Services\WeddingContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -14,9 +16,11 @@ class TableController extends Controller
     /**
      * Display a listing of the tables with occupancy information.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
-        $tables = $request->user()->tables()
+        $context->authorize($request, $wedding);
+
+        $tables = $wedding->tables()
             ->withCount('guests')
             ->orderBy('name')
             ->get()
@@ -30,46 +34,57 @@ class TableController extends Controller
 
         return Inertia::render('Tables/Index', [
             'tables' => $tables,
+            'wedding' => $wedding,
         ]);
     }
 
     /**
      * Show the form for creating a new table.
      */
-    public function create(): Response
+    public function create(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
-        return Inertia::render('Tables/Create');
+        $context->authorize($request, $wedding);
+
+        return Inertia::render('Tables/Create', [
+            'wedding' => $wedding,
+        ]);
     }
 
     /**
      * Store a newly created table.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
+        $context->authorize($request, $wedding);
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:tables,name,NULL,id,user_id,' . $request->user()->id],
+            'name' => ['required', 'string', 'max:255', 'unique:tables,name,NULL,id,wedding_id,' . $wedding->id],
             'capacity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $request->user()->tables()->create($validated);
+        $wedding->tables()->create([
+            ...$validated,
+            'user_id' => $request->user()->id,
+        ]);
 
-        return Redirect::route('tables.index');
+        return Redirect::route('weddings.tables.index', $wedding);
     }
 
     /**
      * Display the table (redirect to index since Inertia doesn't use show).
      */
-    public function show(): RedirectResponse
+    public function show(Wedding $wedding): RedirectResponse
     {
-        return Redirect::route('tables.index');
+        return Redirect::route('weddings.tables.index', $wedding);
     }
 
     /**
      * Show the form for editing the table.
      */
-    public function edit(Request $request, Table $table): Response
+    public function edit(Request $request, Wedding $wedding, Table $table, WeddingContext $context): Response
     {
-        $this->authorizeTable($request, $table);
+        $context->authorize($request, $wedding);
+        $this->authorizeTable($wedding, $table);
 
         return Inertia::render('Tables/Edit', [
             'table' => [
@@ -77,49 +92,52 @@ class TableController extends Controller
                 'name' => $table->name,
                 'capacity' => $table->capacity,
             ],
+            'wedding' => $wedding,
         ]);
     }
 
     /**
      * Update the table.
      */
-    public function update(Request $request, Table $table): RedirectResponse
+    public function update(Request $request, Wedding $wedding, Table $table, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeTable($request, $table);
+        $context->authorize($request, $wedding);
+        $this->authorizeTable($wedding, $table);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:tables,name,' . $table->id . ',id,user_id,' . $request->user()->id],
+            'name' => ['required', 'string', 'max:255', 'unique:tables,name,' . $table->id . ',id,wedding_id,' . $wedding->id],
             'capacity' => ['required', 'integer', 'min:1'],
         ]);
 
         $table->update($validated);
 
-        return Redirect::route('tables.index');
+        return Redirect::route('weddings.tables.index', $wedding);
     }
 
     /**
      * Remove the table (blocked if guests exist).
      */
-    public function destroy(Request $request, Table $table): RedirectResponse
+    public function destroy(Request $request, Wedding $wedding, Table $table, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeTable($request, $table);
+        $context->authorize($request, $wedding);
+        $this->authorizeTable($wedding, $table);
 
         if ($table->guests()->exists()) {
-            return Redirect::route('tables.index')
+            return Redirect::route('weddings.tables.index', $wedding)
                 ->with('error', 'No se puede eliminar una mesa con invitados asignados. Reasigna los invitados primero.');
         }
 
         $table->delete();
 
-        return Redirect::route('tables.index');
+        return Redirect::route('weddings.tables.index', $wedding);
     }
 
     /**
-     * Ensure the table belongs to the authenticated user.
+     * Ensure the table belongs to the wedding.
      */
-    private function authorizeTable(Request $request, Table $table): void
+    private function authorizeTable(Wedding $wedding, Table $table): void
     {
-        if ($table->user_id !== $request->user()->id) {
+        if ($table->wedding_id !== $wedding->id) {
             abort(403);
         }
     }

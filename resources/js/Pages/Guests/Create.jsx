@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create({ rsvpStatuses, tables }) {
+export default function Create({ wedding, rsvpStatuses, tables }) {
     const { data, setData, post, errors, processing } = useForm({
         name: '',
         email: '',
@@ -16,7 +16,7 @@ export default function Create({ rsvpStatuses, tables }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('guests.store'));
+        post(route('weddings.guests.store', wedding.id));
     };
 
     return (
@@ -146,7 +146,7 @@ export default function Create({ rsvpStatuses, tables }) {
                                     Crear Invitado
                                 </PrimaryButton>
                                 <Link
-                                    href={route('guests.index')}
+                                    href={route('weddings.guests.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

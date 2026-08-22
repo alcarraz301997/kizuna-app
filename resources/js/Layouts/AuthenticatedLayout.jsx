@@ -35,40 +35,44 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Panel
                                 </NavLink>
-                                <NavLink
-                                    href={route('categories.index')}
-                                    active={route().current('categories.*')}
-                                >
-                                    Categorías
-                                </NavLink>
-                                <NavLink
-                                    href={route('expenses.index')}
-                                    active={route().current('expenses.*')}
-                                >
-                                    Gastos
-                                </NavLink>
-                                <NavLink
-                                    href={route('vendors.index')}
-                                    active={route().current('vendors.*')}
-                                >
-                                    Proveedores
-                                </NavLink>
-                                <NavLink
-                                    href={route('tables.index')}
-                                    active={route().current('tables.*')}
-                                >
-                                    Mesas
-                                </NavLink>
-                                <NavLink
-                                    href={route('guests.index')}
-                                    active={route().current('guests.*')}
-                                >
-                                    Invitados
-                                </NavLink>
-                                <PlanningNav
-                                    wedding={wedding}
-                                    variant="desktop"
-                                />
+                                {wedding && (
+                                    <>
+                                        <NavLink
+                                            href={route('weddings.categories.index', wedding.id)}
+                                            active={route().current('weddings.categories.*')}
+                                        >
+                                            Categorías
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('weddings.expenses.index', wedding.id)}
+                                            active={route().current('weddings.expenses.*')}
+                                        >
+                                            Gastos
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('weddings.vendors.index', wedding.id)}
+                                            active={route().current('weddings.vendors.*')}
+                                        >
+                                            Proveedores
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('weddings.tables.index', wedding.id)}
+                                            active={route().current('weddings.tables.*')}
+                                        >
+                                            Mesas
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('weddings.guests.index', wedding.id)}
+                                            active={route().current('weddings.guests.*')}
+                                        >
+                                            Invitados
+                                        </NavLink>
+                                        <PlanningNav
+                                            wedding={wedding}
+                                            variant="desktop"
+                                        />
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -177,46 +181,50 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Panel
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('categories.index')}
-                            active={route().current('categories.*')}
-                            onClick={closeNav}
-                        >
-                            Categorías
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('expenses.index')}
-                            active={route().current('expenses.*')}
-                            onClick={closeNav}
-                        >
-                            Gastos
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('vendors.index')}
-                            active={route().current('vendors.*')}
-                            onClick={closeNav}
-                        >
-                            Proveedores
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('tables.index')}
-                            active={route().current('tables.*')}
-                            onClick={closeNav}
-                        >
-                            Mesas
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('guests.index')}
-                            active={route().current('guests.*')}
-                            onClick={closeNav}
-                        >
-                            Invitados
-                        </ResponsiveNavLink>
-                        <PlanningNav
-                            wedding={wedding}
-                            variant="mobile"
-                            onNavigate={closeNav}
-                        />
+                        {wedding && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('weddings.categories.index', wedding.id)}
+                                    active={route().current('weddings.categories.*')}
+                                    onClick={closeNav}
+                                >
+                                    Categorías
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('weddings.expenses.index', wedding.id)}
+                                    active={route().current('weddings.expenses.*')}
+                                    onClick={closeNav}
+                                >
+                                    Gastos
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('weddings.vendors.index', wedding.id)}
+                                    active={route().current('weddings.vendors.*')}
+                                    onClick={closeNav}
+                                >
+                                    Proveedores
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('weddings.tables.index', wedding.id)}
+                                    active={route().current('weddings.tables.*')}
+                                    onClick={closeNav}
+                                >
+                                    Mesas
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('weddings.guests.index', wedding.id)}
+                                    active={route().current('weddings.guests.*')}
+                                    onClick={closeNav}
+                                >
+                                    Invitados
+                                </ResponsiveNavLink>
+                                <PlanningNav
+                                    wedding={wedding}
+                                    variant="mobile"
+                                    onNavigate={closeNav}
+                                />
+                            </>
+                        )}
                     </div>
 
                     <div className="border-t border-white/40 pb-1 pt-4">

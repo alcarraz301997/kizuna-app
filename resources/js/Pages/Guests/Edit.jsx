@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ guest, rsvpStatuses, tables }) {
+export default function Edit({ wedding, guest, rsvpStatuses, tables }) {
     const { data, setData, put, errors, processing } = useForm({
         name: guest.name,
         email: guest.email || '',
@@ -16,7 +16,7 @@ export default function Edit({ guest, rsvpStatuses, tables }) {
 
     const submit = (e) => {
         e.preventDefault();
-        put(route('guests.update', guest.id));
+        put(route('weddings.guests.update', [wedding.id, guest.id]));
     };
 
     return (
@@ -149,7 +149,7 @@ export default function Edit({ guest, rsvpStatuses, tables }) {
                                     Actualizar Invitado
                                 </PrimaryButton>
                                 <Link
-                                    href={route('guests.index')}
+                                    href={route('weddings.guests.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

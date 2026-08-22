@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create({ paymentStatuses }) {
+export default function Create({ wedding, paymentStatuses }) {
     const { data, setData, post, errors, processing } = useForm({
         name: '',
         service_category: '',
@@ -17,7 +17,7 @@ export default function Create({ paymentStatuses }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('vendors.store'));
+        post(route('weddings.vendors.store', wedding.id));
     };
 
     return (
@@ -159,7 +159,7 @@ export default function Create({ paymentStatuses }) {
                                     Crear Proveedor
                                 </PrimaryButton>
                                 <Link
-                                    href={route('vendors.index')}
+                                    href={route('weddings.vendors.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

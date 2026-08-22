@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create() {
+export default function Create({ wedding }) {
     const { data, setData, post, errors, processing } = useForm({
         name: '',
         budget_limit: '',
@@ -14,7 +14,7 @@ export default function Create() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('categories.store'));
+        post(route('weddings.categories.store', wedding.id));
     };
 
     return (
@@ -88,7 +88,7 @@ export default function Create() {
                                     Crear Categoría
                                 </PrimaryButton>
                                 <Link
-                                    href={route('categories.index')}
+                                    href={route('weddings.categories.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

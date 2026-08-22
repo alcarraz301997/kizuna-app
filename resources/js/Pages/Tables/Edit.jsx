@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ table }) {
+export default function Edit({ wedding, table }) {
     const { data, setData, put, errors, processing } = useForm({
         name: table.name,
         capacity: table.capacity,
@@ -13,7 +13,7 @@ export default function Edit({ table }) {
 
     const submit = (e) => {
         e.preventDefault();
-        put(route('tables.update', table.id));
+        put(route('weddings.tables.update', [wedding.id, table.id]));
     };
 
     return (
@@ -64,7 +64,7 @@ export default function Edit({ table }) {
                                     Actualizar Mesa
                                 </PrimaryButton>
                                 <Link
-                                    href={route('tables.index')}
+                                    href={route('weddings.tables.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

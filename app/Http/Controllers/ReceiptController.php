@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\Receipt;
+use App\Models\Wedding;
+use App\Services\WeddingContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -15,12 +17,10 @@ class ReceiptController extends Controller
     /**
      * Store a newly uploaded receipt for an expense.
      */
-    public function store(Request $request, Expense $expense): RedirectResponse
+    public function store(Request $request, Wedding $wedding, Expense $expense, WeddingContext $context): RedirectResponse
     {
-        // Authorization: expense must belong to the user
-        if ($expense->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $context->authorize($request, $wedding);
+        $this->authorizeExpense($wedding, $expense);
 
         // Check max 5 receipts per expense
         if ($expense->receipts()->count() >= 5) {
@@ -57,10 +57,13 @@ class ReceiptController extends Controller
     /**
      * Remove the receipt (delete DB record + physical file).
      */
-    public function destroy(Request $request, Receipt $receipt): RedirectResponse
+    public function destroy(Request $request, Wedding $wedding, Receipt $receipt, WeddingContext $context): RedirectResponse
     {
-        // Authorization: receipt must belong to the user
-        if ($receipt->user_id !== $request->user()->id) {
+        $context->authorize($request, $wedding);
+
+        // Authorization: receipt must belong to the wedding
+        $expense = $receipt->expense;
+        if (! $expense || $expense->wedding_id !== $wedding->id) {
             abort(403);
         }
 
@@ -72,5 +75,15 @@ class ReceiptController extends Controller
         $receipt->delete();
 
         return Redirect::back();
+    }
+
+    /**
+     * Ensure the expense belongs to the wedding.
+     */
+    private function authorizeExpense(Wedding $wedding, Expense $expense): void
+    {
+        if ($expense->wedding_id !== $wedding->id) {
+            abort(403);
+        }
     }
 }

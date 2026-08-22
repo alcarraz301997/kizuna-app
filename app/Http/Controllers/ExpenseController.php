@@ -6,7 +6,9 @@ use App\Enums\ExpenseStatus;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Vendor;
+use App\Models\Wedding;
 use App\Services\ExpenseCommitmentService;
+use App\Services\WeddingContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -20,9 +22,11 @@ class ExpenseController extends Controller
     /**
      * Display a listing of the expenses with optional category filter.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
-        $query = $request->user()->expenses()->with('category');
+        $context->authorize($request, $wedding);
+
+        $query = $wedding->expenses()->with('category');
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -43,7 +47,7 @@ class ExpenseController extends Controller
             'created_at' => $e->created_at->format('Y-m-d'),
         ]);
 
-        $categories = $request->user()->categories()->orderBy('name')->get()->map(fn (Category $c) => [
+        $categories = $wedding->categories()->orderBy('name')->get()->map(fn (Category $c) => [
             'id' => $c->id,
             'name' => $c->name,
         ]);
@@ -51,6 +55,7 @@ class ExpenseController extends Controller
         return Inertia::render('Expenses/Index', [
             'expenses' => $expenses,
             'categories' => $categories,
+            'wedding' => $wedding,
             'filters' => [
                 'category_id' => $request->category_id,
             ],
@@ -60,14 +65,16 @@ class ExpenseController extends Controller
     /**
      * Show the form for creating a new expense.
      */
-    public function create(Request $request): Response
+    public function create(Request $request, Wedding $wedding, WeddingContext $context): Response
     {
-        $categories = $request->user()->categories()->orderBy('name')->get()->map(fn (Category $c) => [
+        $context->authorize($request, $wedding);
+
+        $categories = $wedding->categories()->orderBy('name')->get()->map(fn (Category $c) => [
             'id' => $c->id,
             'name' => $c->name,
         ]);
 
-        $vendors = $request->user()->vendors()->orderBy('name')->get()->map(fn (Vendor $v) => [
+        $vendors = $wedding->vendors()->orderBy('name')->get()->map(fn (Vendor $v) => [
             'id' => $v->id,
             'name' => $v->name,
         ]);
@@ -75,6 +82,7 @@ class ExpenseController extends Controller
         return Inertia::render('Expenses/Create', [
             'categories' => $categories,
             'vendors' => $vendors,
+            'wedding' => $wedding,
             'statuses' => collect(ExpenseStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => ucfirst($s->value),
@@ -85,8 +93,10 @@ class ExpenseController extends Controller
     /**
      * Store a newly created expense.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
+        $context->authorize($request, $wedding);
+
         $validated = $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
@@ -97,23 +107,30 @@ class ExpenseController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        // Ensure category belongs to the authenticated user
-        $category = $request->user()->categories()->find($validated['category_id']);
+        // Ensure category belongs to the wedding
+        $category = $wedding->categories()->find($validated['category_id']);
         if (! $category) {
-            abort(403, 'Category does not belong to you.');
+            abort(403, 'Category does not belong to this wedding.');
         }
 
-        // If vendor_id provided, ensure vendor belongs to the user
+        // If vendor_id provided, ensure vendor belongs to the wedding
         if (! empty($validated['vendor_id'])) {
-            $vendor = $request->user()->vendors()->find($validated['vendor_id']);
+            $vendor = $wedding->vendors()->find($validated['vendor_id']);
             if (! $vendor) {
-                abort(403, 'Vendor does not belong to you.');
+                abort(403, 'Vendor does not belong to this wedding.');
             }
         }
 
-        $validated['user_id'] = $request->user()->id;
-
-        $expense = $request->user()->expenses()->create($validated);
+        $expense = $wedding->expenses()->create([
+            'category_id' => $validated['category_id'],
+            'amount' => $validated['amount'],
+            'vendor' => $validated['vendor'] ?? null,
+            'vendor_id' => $validated['vendor_id'] ?? null,
+            'status' => $validated['status'],
+            'paid_date' => $validated['paid_date'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'user_id' => $request->user()->id,
+        ]);
 
         // Handle optional split data from create form
         if ($request->filled('split_type')) {
@@ -139,24 +156,25 @@ class ExpenseController extends Controller
             }
         }
 
-        return Redirect::route('expenses.index');
+        return Redirect::route('weddings.expenses.index', $wedding);
     }
 
     /**
      * Show the form for editing the expense.
      */
-    public function edit(Request $request, Expense $expense, ExpenseCommitmentService $commitmentService): Response
+    public function edit(Request $request, Wedding $wedding, Expense $expense, WeddingContext $context, ExpenseCommitmentService $commitmentService): Response
     {
-        $this->authorizeExpense($request, $expense);
+        $context->authorize($request, $wedding);
+        $this->authorizeExpense($wedding, $expense);
 
         $expense->load('split');
 
-        $categories = $request->user()->categories()->orderBy('name')->get()->map(fn (Category $c) => [
+        $categories = $wedding->categories()->orderBy('name')->get()->map(fn (Category $c) => [
             'id' => $c->id,
             'name' => $c->name,
         ]);
 
-        $vendors = $request->user()->vendors()->orderBy('name')->get()->map(fn (Vendor $v) => [
+        $vendors = $wedding->vendors()->orderBy('name')->get()->map(fn (Vendor $v) => [
             'id' => $v->id,
             'name' => $v->name,
         ]);
@@ -199,6 +217,7 @@ class ExpenseController extends Controller
             'categories' => $categories,
             'vendors' => $vendors,
             'receipts' => $receipts,
+            'wedding' => $wedding,
             'statuses' => collect(ExpenseStatus::cases())->map(fn ($s) => [
                 'value' => $s->value,
                 'label' => ucfirst($s->value),
@@ -211,9 +230,10 @@ class ExpenseController extends Controller
     /**
      * Update the expense.
      */
-    public function update(Request $request, Expense $expense): RedirectResponse
+    public function update(Request $request, Wedding $wedding, Expense $expense, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeExpense($request, $expense);
+        $context->authorize($request, $wedding);
+        $this->authorizeExpense($wedding, $expense);
 
         $validated = $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
@@ -225,43 +245,44 @@ class ExpenseController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        // Ensure category belongs to the authenticated user
-        $category = $request->user()->categories()->find($validated['category_id']);
+        // Ensure category belongs to the wedding
+        $category = $wedding->categories()->find($validated['category_id']);
         if (! $category) {
-            abort(403, 'Category does not belong to you.');
+            abort(403, 'Category does not belong to this wedding.');
         }
 
-        // If vendor_id provided, ensure vendor belongs to the user
+        // If vendor_id provided, ensure vendor belongs to the wedding
         if (! empty($validated['vendor_id'])) {
-            $vendor = $request->user()->vendors()->find($validated['vendor_id']);
+            $vendor = $wedding->vendors()->find($validated['vendor_id']);
             if (! $vendor) {
-                abort(403, 'Vendor does not belong to you.');
+                abort(403, 'Vendor does not belong to this wedding.');
             }
         }
 
         $expense->update($validated);
 
-        return Redirect::route('expenses.index');
+        return Redirect::route('weddings.expenses.index', $wedding);
     }
 
     /**
      * Remove the expense.
      */
-    public function destroy(Request $request, Expense $expense): RedirectResponse
+    public function destroy(Request $request, Wedding $wedding, Expense $expense, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeExpense($request, $expense);
+        $context->authorize($request, $wedding);
+        $this->authorizeExpense($wedding, $expense);
 
         $expense->delete();
 
-        return Redirect::route('expenses.index');
+        return Redirect::route('weddings.expenses.index', $wedding);
     }
 
     /**
-     * Ensure the expense belongs to the authenticated user.
+     * Ensure the expense belongs to the wedding.
      */
-    private function authorizeExpense(Request $request, Expense $expense): void
+    private function authorizeExpense(Wedding $wedding, Expense $expense): void
     {
-        if ($expense->user_id !== $request->user()->id) {
+        if ($expense->wedding_id !== $wedding->id) {
             abort(403);
         }
     }

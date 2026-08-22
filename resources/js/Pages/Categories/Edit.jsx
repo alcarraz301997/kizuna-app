@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ category }) {
+export default function Edit({ wedding, category }) {
     const { data, setData, put, errors, processing } = useForm({
         name: category.name,
         budget_limit: category.budget_limit,
@@ -14,7 +14,7 @@ export default function Edit({ category }) {
 
     const submit = (e) => {
         e.preventDefault();
-        put(route('categories.update', category.id));
+        put(route('weddings.categories.update', [wedding.id, category.id]));
     };
 
     return (
@@ -87,7 +87,7 @@ export default function Edit({ category }) {
                                     Actualizar Categoría
                                 </PrimaryButton>
                                 <Link
-                                    href={route('categories.index')}
+                                    href={route('weddings.categories.index', wedding.id)}
                                     className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                 >
                                     Cancelar

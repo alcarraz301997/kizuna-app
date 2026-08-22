@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
+use App\Models\Wedding;
+use App\Services\WeddingContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -13,12 +15,13 @@ class ExpenseSplitController extends Controller
     /**
      * Store a new split for the given expense.
      */
-    public function store(Request $request, Expense $expense): RedirectResponse
+    public function store(Request $request, Wedding $wedding, Expense $expense, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeExpense($request, $expense);
+        $context->authorize($request, $wedding);
+        $this->authorizeExpense($wedding, $expense);
 
         if ($expense->split()->exists()) {
-            return Redirect::route('expenses.edit', $expense)
+            return Redirect::route('weddings.expenses.edit', [$wedding, $expense])
                 ->with('error', 'Este gasto ya tiene un split asignado.');
         }
 
@@ -33,16 +36,17 @@ class ExpenseSplitController extends Controller
             'person_b_amount' => $amounts['person_b_amount'],
         ]);
 
-        return Redirect::route('expenses.edit', $expense)
+        return Redirect::route('weddings.expenses.edit', [$wedding, $expense])
             ->with('success', 'Split creado correctamente.');
     }
 
     /**
      * Update the existing split for the given expense.
      */
-    public function update(Request $request, Expense $expense): RedirectResponse
+    public function update(Request $request, Wedding $wedding, Expense $expense, WeddingContext $context): RedirectResponse
     {
-        $this->authorizeExpense($request, $expense);
+        $context->authorize($request, $wedding);
+        $this->authorizeExpense($wedding, $expense);
 
         $split = $expense->split;
         if (! $split) {
@@ -60,7 +64,7 @@ class ExpenseSplitController extends Controller
             'person_b_amount' => $amounts['person_b_amount'],
         ]);
 
-        return Redirect::route('expenses.edit', $expense)
+        return Redirect::route('weddings.expenses.edit', [$wedding, $expense])
             ->with('success', 'Split actualizado correctamente.');
     }
 
@@ -143,11 +147,11 @@ class ExpenseSplitController extends Controller
     }
 
     /**
-     * Ensure the expense belongs to the authenticated user.
+     * Ensure the expense belongs to the wedding.
      */
-    private function authorizeExpense(Request $request, Expense $expense): void
+    private function authorizeExpense(Wedding $wedding, Expense $expense): void
     {
-        if ($expense->user_id !== $request->user()->id) {
+        if ($expense->wedding_id !== $wedding->id) {
             abort(403);
         }
     }

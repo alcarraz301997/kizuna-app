@@ -17,13 +17,13 @@ const statusLabels = {
     paid: 'Pagado',
 };
 
-export default function Index({ expenses, categories, filters }) {
+export default function Index({ wedding, expenses, categories, filters }) {
     const flash = usePage().props.flash;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
         if (confirm('¿Estás seguro de que deseas eliminar este gasto?')) {
-            destroy(route('expenses.destroy', id));
+            destroy(route('weddings.expenses.destroy', [wedding.id, id]));
         }
     };
 
@@ -76,7 +76,7 @@ export default function Index({ expenses, categories, filters }) {
     const rowActions = (row) => (
         <>
             <Link
-                href={route('expenses.edit', row.id)}
+                href={route('weddings.expenses.edit', [wedding.id, row.id])}
                 className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
             >
                 Editar
@@ -97,7 +97,7 @@ export default function Index({ expenses, categories, filters }) {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         Gastos
                     </h2>
-                    <Link href={route('expenses.create')}>
+                    <Link href={route('weddings.expenses.create', wedding.id)}>
                         <PrimaryButton>Agregar Gasto</PrimaryButton>
                     </Link>
                 </div>
@@ -131,7 +131,7 @@ export default function Index({ expenses, categories, filters }) {
                                     params.delete('category_id');
                                 }
                                 const qs = params.toString();
-                                window.location.href = route('expenses.index') + (qs ? '?' + qs : '');
+                                window.location.href = route('weddings.expenses.index', wedding.id) + (qs ? '?' + qs : '');
                             }}
                         >
                             <option value="">Todas las categorías</option>
@@ -149,7 +149,7 @@ export default function Index({ expenses, categories, filters }) {
                         rowKey={(row) => row.id}
                         actions={rowActions}
                         emptyMessage="Aún no hay gastos."
-                        emptyLinkHref={route('expenses.create')}
+                        emptyLinkHref={route('weddings.expenses.create', wedding.id)}
                         emptyLinkText="Crea uno"
                     />
                 </div>

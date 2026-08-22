@@ -16,12 +16,12 @@ const rsvpStatusColors = {
     no_asiste: 'bg-rose-100 text-rose-800',
 };
 
-export default function Index({ guests, counts }) {
+export default function Index({ wedding, guests, counts }) {
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
         if (confirm('¿Estás seguro de que deseas eliminar este invitado?')) {
-            destroy(route('guests.destroy', id));
+            destroy(route('weddings.guests.destroy', [wedding.id, id]));
         }
     };
 
@@ -68,7 +68,7 @@ export default function Index({ guests, counts }) {
     const rowActions = (row) => (
         <>
             <Link
-                href={route('guests.edit', row.id)}
+                href={route('weddings.guests.edit', [wedding.id, row.id])}
                 className="clay-btn clay-btn-secondary !px-3 !py-1.5 text-xs font-semibold text-primary"
             >
                 Editar
@@ -91,12 +91,12 @@ export default function Index({ guests, counts }) {
                     </h2>
                     <div className="flex items-center gap-2">
                         <a
-                            href={route('guests.export.pdf')}
+                            href={route('weddings.guests.export.pdf', wedding.id)}
                             className="clay-btn clay-btn-success !rounded-xl px-5 py-2.5 text-xs font-semibold uppercase tracking-widest"
                         >
                             Exportar PDF
                         </a>
-                        <Link href={route('guests.create')}>
+                        <Link href={route('weddings.guests.create', wedding.id)}>
                             <PrimaryButton>Agregar Invitado</PrimaryButton>
                         </Link>
                     </div>
@@ -128,7 +128,7 @@ export default function Index({ guests, counts }) {
                         rowKey={(row) => row.id}
                         actions={rowActions}
                         emptyMessage="Aún no hay invitados."
-                        emptyLinkHref={route('guests.create')}
+                        emptyLinkHref={route('weddings.guests.create', wedding.id)}
                         emptyLinkText="Agrega uno"
                     />
                 </div>
