@@ -61,8 +61,18 @@ jobs:
             # Activar modo mantenimiento
             $PHP_BIN artisan down || true
 
-            # Obtener últimos cambios
-            git pull origin main
+            # Asegurar repositorio (auto-clonación si la carpeta estaba vacía)
+            if [ ! -d .git ]; then
+              echo "Inicializando repositorio Git en el servidor..."
+              git init
+              git remote add origin https://github.com/alcarraz301997/kizuna-app.git || git remote set-url origin https://github.com/alcarraz301997/kizuna-app.git
+              git fetch origin main
+              git reset --hard origin/main
+              git branch -M main
+            else
+              # Obtener últimos cambios
+              git pull origin main
+            fi
 
             # Instalar dependencias de producción en PHP con PHP 8.3
             $PHP_BIN $(which composer) install --no-dev --no-interaction --prefer-dist --optimize-autoloader
@@ -75,6 +85,9 @@ jobs:
 
             # Ejecutar migraciones
             $PHP_BIN artisan migrate --force
+
+            # Enlazar storage si no existe
+            $PHP_BIN artisan storage:link || true
 
             # Limpiar y regenerar cachés para máximo rendimiento
             $PHP_BIN artisan optimize:clear
