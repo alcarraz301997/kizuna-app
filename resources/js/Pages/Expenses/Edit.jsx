@@ -287,7 +287,7 @@ export default function Edit({ wedding, expense, categories, vendors, receipts, 
                                         Actualizar Gasto
                                     </PrimaryButton>
                                     <Link
-                                        href={route('weddings.expenses.index', wedding.id)}
+                                        href={route('weddings.expenses.index', wedding?.id || expense.wedding_id)}
                                         className="text-sm font-medium text-gray-500 hover:text-gray-800"
                                     >
                                         Cancelar
@@ -313,7 +313,7 @@ export default function Edit({ wedding, expense, categories, vendors, receipts, 
                                 Adjuntos ({receiptCount}/{maxReceipts})
                             </h3>
 
-                            <ReceiptPreview weddingId={wedding.id} receipts={receipts} />
+                            <ReceiptPreview weddingId={wedding?.id || expense.wedding_id} receipts={receipts} />
 
                             {canUploadMore && (
                                 <div className="mt-6 border-t border-gray-200/50 pt-4">
@@ -413,7 +413,7 @@ export default function Edit({ wedding, expense, categories, vendors, receipts, 
                                 </>
                             ) : (
                                 <SplitForm
-                                    weddingId={wedding.id}
+                                    weddingId={wedding?.id || expense.wedding_id}
                                     expenseId={expense.id}
                                     amount={expense.amount}
                                     split={null}

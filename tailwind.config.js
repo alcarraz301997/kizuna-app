@@ -56,6 +56,12 @@ export default {
                     DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
                     light: 'rgb(var(--color-border-light) / <alpha-value>)',
                 },
+                text: {
+                    primary: 'rgb(var(--color-text-primary) / <alpha-value>)',
+                    secondary: 'rgb(var(--color-text-secondary) / <alpha-value>)',
+                    muted: 'rgb(var(--color-text-muted) / <alpha-value>)',
+                    inverse: 'rgb(var(--color-text-inverse) / <alpha-value>)',
+                },
             },
             minHeight: {
                 touch: '44px',

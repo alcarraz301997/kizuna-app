@@ -127,6 +127,9 @@ describe('ThemeProvider', () => {
         expect(get()).toBe('sunset');
 
         await user.click(screen.getByTestId('cycle-theme'));
+        expect(get()).toBe('dark');
+
+        await user.click(screen.getByTestId('cycle-theme'));
         expect(get()).toBe('default'); // wraps around
     });
 

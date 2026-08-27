@@ -5,6 +5,7 @@ const themeLabels = {
     ocean: 'Ocean',
     forest: 'Forest',
     sunset: 'Sunset',
+    dark: 'Oscuro',
 };
 
 const themeIcons = {
@@ -12,6 +13,7 @@ const themeIcons = {
     ocean: '●',
     forest: '●',
     sunset: '●',
+    dark: '●',
 };
 
 const themeColors = {
@@ -19,6 +21,7 @@ const themeColors = {
     ocean: 'bg-sky-500',
     forest: 'bg-emerald-500',
     sunset: 'bg-orange-500',
+    dark: 'bg-slate-700 border border-slate-500',
 };
 
 export default function ThemeToggle({ className = '' }) {
@@ -36,7 +39,7 @@ export default function ThemeToggle({ className = '' }) {
                 className={`inline-block h-4 w-4 rounded-full ${themeColors[theme] || 'bg-gray-400'}`}
                 aria-hidden="true"
             />
-            <span className="hidden sm:inline text-gray-600">
+            <span className="hidden sm:inline text-secondary">
                 {themeLabels[theme] || theme}
             </span>
         </button>

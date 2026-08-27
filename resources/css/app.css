@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    body {
+        color: rgb(var(--color-text-primary));
+    }
+}
+
 /* ============================================
    Design Tokens — Semantic Color System
    Token hierarchy: primitive → semantic → component
@@ -164,6 +170,67 @@
     --blob-2: 216 180 254;
     --blob-3: 199 210 254;
     --blob-4: 254 205 211;
+}
+
+/* --- Theme: dark (dark mode) --- */
+.theme-dark {
+    --color-surface: 30 35 48;
+    --color-surface-alt: 21 25 35;
+    --color-surface-elevated: 40 47 64;
+
+    --color-text-primary: 243 244 246;
+    --color-text-secondary: 190 198 212;
+    --color-text-muted: 138 148 166;
+    --color-text-inverse: 17 24 39;
+
+    --color-primary: 129 140 248;
+    --color-primary-hover: 165 180 252;
+    --color-primary-light: 37 43 66;
+    --color-primary-foreground: 255 255 255;
+
+    --color-secondary: 156 163 175;
+    --color-secondary-light: 40 47 64;
+    --color-secondary-foreground: 243 244 246;
+
+    --color-accent: 251 113 133;
+    --color-accent-light: 58 32 44;
+
+    --color-muted: 36 42 56;
+    --color-muted-foreground: 156 163 175;
+
+    --color-success: 52 211 153;
+    --color-success-light: 26 50 44;
+    --color-warning: 251 191 36;
+    --color-warning-light: 55 45 28;
+    --color-danger: 248 113 113;
+    --color-danger-light: 58 30 30;
+
+    --color-border: 49 57 77;
+    --color-border-light: 63 74 98;
+
+    --clay-shadow-dark: 10 13 20;
+    --clay-shadow-light: 50 58 78;
+    --clay-surface-gradient-from: var(--color-surface);
+    --clay-surface-gradient-to: var(--color-surface-alt);
+
+    --clay-icon-from: var(--color-surface-elevated);
+    --clay-icon-to: var(--color-surface);
+
+    --nav-bg: rgba(21, 25, 35, 0.85);
+    --nav-border: rgba(63, 74, 98, 0.5);
+    --nav-link-active-bg-from: 49 46 129;
+    --nav-link-active-bg-to: 67 56 202;
+    --nav-link-active-text: 224 231 255;
+
+    --page-bg-from: 15 18 25;
+    --page-bg-mid: 20 25 36;
+    --page-bg-mid2: 24 28 42;
+    --page-bg-to: 17 20 29;
+
+    --blob-1: 67 56 202;
+    --blob-2: 159 18 57;
+    --blob-3: 180 83 9;
+    --blob-4: 109 40 217;
 }
 
 /* ============================================
@@ -470,9 +537,9 @@
 
 /* Clay header */
 .clay-header {
-    background: rgba(255, 255, 255, 0.6);
+    background: var(--nav-bg);
     backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid var(--nav-border);
     box-shadow:
         0 2px 12px rgba(var(--clay-shadow-dark), 0.03),
         inset 0 -1px 2px rgba(var(--clay-shadow-light), 0.5);
@@ -511,3 +578,92 @@
         4px 4px 10px rgba(var(--clay-shadow-dark), 0.12),
         -3px -3px 8px rgba(var(--clay-shadow-light), 0.35);
 }
+
+/* Theme dark specific component enhancements */
+.theme-dark .clay-card {
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow:
+        8px 8px 24px rgba(0, 0, 0, 0.45),
+        -4px -4px 14px rgba(255, 255, 255, 0.03),
+        inset 1px 1px 2px rgba(255, 255, 255, 0.08),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .clay-card:hover {
+    box-shadow:
+        10px 10px 28px rgba(0, 0, 0, 0.55),
+        -4px -4px 16px rgba(255, 255, 255, 0.04),
+        inset 1px 1px 2px rgba(255, 255, 255, 0.1),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.theme-dark .clay-btn {
+    box-shadow:
+        4px 4px 12px rgba(0, 0, 0, 0.4),
+        -2px -2px 8px rgba(255, 255, 255, 0.03),
+        inset 1px 1px 2px rgba(255, 255, 255, 0.08),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .clay-btn-secondary {
+    background: linear-gradient(145deg, rgb(38 45 61), rgb(28 33 46));
+    color: rgb(var(--color-text-primary));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .clay-btn-secondary:hover {
+    background: linear-gradient(145deg, rgb(45 54 74), rgb(34 40 56));
+    color: #ffffff;
+}
+
+.theme-dark .clay-input,
+.theme-dark .clay-select,
+.theme-dark .clay-textarea {
+    color: rgb(var(--color-text-primary));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+        inset -1px -1px 3px rgba(255, 255, 255, 0.04);
+}
+
+.theme-dark .clay-input::placeholder,
+.theme-dark .clay-textarea::placeholder {
+    color: rgb(var(--color-text-muted));
+}
+
+.theme-dark select.clay-select option {
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-text-primary));
+}
+
+/* Ensure strong contrast for hardcoded gray text classes in dark mode */
+.theme-dark .text-gray-900,
+.theme-dark .text-gray-800 {
+    color: rgb(243 244 246) !important;
+}
+
+.theme-dark .text-gray-700,
+.theme-dark .text-gray-600 {
+    color: rgb(209 213 219) !important;
+}
+
+.theme-dark .text-gray-500 {
+    color: rgb(156 163 175) !important;
+}
+
+.theme-dark .text-gray-400 {
+    color: rgb(107 114 128) !important;
+}
+
+.theme-dark .hover\:bg-white\/40:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.theme-dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.theme-dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]),
+.theme-dark .border-gray-100,
+.theme-dark .border-gray-200 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export const themes = ['default', 'ocean', 'forest', 'sunset'];
+export const themes = ['default', 'ocean', 'forest', 'sunset', 'dark'];
 
 const THEME_STORAGE_KEY = 'kizuna-theme';
 const DEFAULT_THEME = 'default';
