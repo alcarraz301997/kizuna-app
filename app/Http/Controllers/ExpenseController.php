@@ -139,9 +139,17 @@ class ExpenseController extends Controller
 
         // Process file uploads (W2 fix)
         if ($request->hasFile('receipt_files')) {
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
             foreach ($request->file('receipt_files') as $file) {
                 if ($expense->receipts()->count() >= 5) {
                     break;
+                }
+                // Validate actual file content (not just client-declared extension)
+                if (! in_array($file->getMimeType(), $allowedMimes, true)) {
+                    continue;
+                }
+                if ($file->getSize() > 10 * 1024 * 1024) { // 10 MB
+                    continue;
                 }
                 $extension = $file->getClientOriginalExtension();
                 $filename = time() . '_' . Str::random(8) . '.' . $extension;
@@ -271,6 +279,7 @@ class ExpenseController extends Controller
     {
         $context->authorize($request, $wedding);
         $this->authorizeExpense($wedding, $expense);
+        $this->authorize('delete', $expense);
 
         $expense->delete();
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Models\Wedding;
 use App\Services\WeddingContext;
@@ -56,21 +58,17 @@ class CategoryController extends Controller
     /**
      * Store a newly created category for the wedding.
      */
-    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
+    public function store(StoreCategoryRequest $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
         $context->authorize($request, $wedding);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:categories,name,NULL,id,wedding_id,' . $wedding->id],
-            'budget_limit' => ['required', 'numeric', 'gt:0'],
-            'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
-        ]);
+        $validated = $request->validated();
 
         $wedding->categories()->create([
-            'name' => $validated['name'],
+            'name'         => $validated['name'],
             'budget_limit' => $validated['budget_limit'],
-            'color' => $validated['color'],
-            'user_id' => $request->user()->id,
+            'color'        => $validated['color'],
+            'user_id'      => $request->user()->id,
         ]);
 
         return Redirect::route('weddings.categories.index', $wedding);
@@ -98,18 +96,12 @@ class CategoryController extends Controller
     /**
      * Update the category.
      */
-    public function update(Request $request, Wedding $wedding, Category $category, WeddingContext $context): RedirectResponse
+    public function update(UpdateCategoryRequest $request, Wedding $wedding, Category $category, WeddingContext $context): RedirectResponse
     {
         $context->authorize($request, $wedding);
         $this->authorizeCategory($wedding, $category);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:categories,name,' . $category->id . ',id,wedding_id,' . $wedding->id],
-            'budget_limit' => ['required', 'numeric', 'gt:0'],
-            'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
-        ]);
-
-        $category->update($validated);
+        $category->update($request->validated());
 
         return Redirect::route('weddings.categories.index', $wedding);
     }
@@ -121,6 +113,7 @@ class CategoryController extends Controller
     {
         $context->authorize($request, $wedding);
         $this->authorizeCategory($wedding, $category);
+        $this->authorize('delete', $category);
 
         if ($category->expenses()->exists()) {
             return Redirect::route('weddings.categories.index', $wedding)

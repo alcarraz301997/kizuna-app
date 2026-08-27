@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\VendorPaymentStatus;
+use App\Http\Requests\StoreVendorRequest;
+use App\Http\Requests\UpdateVendorRequest;
 use App\Models\Vendor;
 use App\Models\Wedding;
 use App\Services\WeddingContext;
@@ -77,21 +79,12 @@ class VendorController extends Controller
     /**
      * Store a newly created vendor.
      */
-    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
+    public function store(StoreVendorRequest $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
         $context->authorize($request, $wedding);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:vendors,name,NULL,id,wedding_id,' . $wedding->id],
-            'service_category' => ['required', 'string', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:50'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'payment_status' => ['required', 'string', 'in:no_iniciado,pagado_parcialmente,pagado_completo'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
         $wedding->vendors()->create([
-            ...$validated,
+            ...$request->validated(),
             'user_id' => $request->user()->id,
         ]);
 
@@ -139,21 +132,12 @@ class VendorController extends Controller
     /**
      * Update the vendor.
      */
-    public function update(Request $request, Wedding $wedding, Vendor $vendor, WeddingContext $context): RedirectResponse
+    public function update(UpdateVendorRequest $request, Wedding $wedding, Vendor $vendor, WeddingContext $context): RedirectResponse
     {
         $context->authorize($request, $wedding);
         $this->authorizeVendor($wedding, $vendor);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:vendors,name,' . $vendor->id . ',id,wedding_id,' . $wedding->id],
-            'service_category' => ['required', 'string', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:50'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'payment_status' => ['required', 'string', 'in:no_iniciado,pagado_parcialmente,pagado_completo'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
-        $vendor->update($validated);
+        $vendor->update($request->validated());
 
         return Redirect::route('weddings.vendors.index', $wedding);
     }
@@ -165,6 +149,7 @@ class VendorController extends Controller
     {
         $context->authorize($request, $wedding);
         $this->authorizeVendor($wedding, $vendor);
+        $this->authorize('delete', $vendor);
 
         if ($vendor->expenses()->exists()) {
             return Redirect::route('weddings.vendors.index', $wedding)

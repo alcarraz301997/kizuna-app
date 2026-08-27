@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RsvpStatus;
+use App\Http\Requests\StoreGuestRequest;
+use App\Http\Requests\UpdateGuestRequest;
 use App\Models\Guest;
 use App\Models\Table;
 use App\Models\Wedding;
@@ -70,17 +72,11 @@ class GuestController extends Controller
     /**
      * Store a newly created guest.
      */
-    public function store(Request $request, Wedding $wedding, WeddingContext $context): RedirectResponse
+    public function store(StoreGuestRequest $request, Wedding $wedding, WeddingContext $context): RedirectResponse
     {
         $context->authorize($request, $wedding);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'rsvp_status' => ['required', 'string', 'in:pendiente,confirmado,no_asiste'],
-            'table_id' => ['nullable', 'integer', 'exists:tables,id'],
-        ]);
+        $validated = $request->validated();
 
         // If a table is selected, verify it belongs to the wedding and has capacity.
         if (! empty($validated['table_id'])) {
@@ -132,18 +128,12 @@ class GuestController extends Controller
     /**
      * Update the guest.
      */
-    public function update(Request $request, Wedding $wedding, Guest $guest, WeddingContext $context): RedirectResponse
+    public function update(UpdateGuestRequest $request, Wedding $wedding, Guest $guest, WeddingContext $context): RedirectResponse
     {
         $context->authorize($request, $wedding);
         $this->authorizeGuest($wedding, $guest);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'rsvp_status' => ['required', 'string', 'in:pendiente,confirmado,no_asiste'],
-            'table_id' => ['nullable', 'integer', 'exists:tables,id'],
-        ]);
+        $validated = $request->validated();
 
         // If a table is selected, verify it belongs to the wedding and has capacity.
         if (! empty($validated['table_id'])) {
@@ -165,6 +155,7 @@ class GuestController extends Controller
     {
         $context->authorize($request, $wedding);
         $this->authorizeGuest($wedding, $guest);
+        $this->authorize('delete', $guest);
 
         $guest->delete();
 

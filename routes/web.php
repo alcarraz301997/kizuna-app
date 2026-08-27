@@ -7,6 +7,7 @@ use App\Http\Controllers\ExpenseCommitmentController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseSplitController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\LegacyRedirectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\TableController;
@@ -27,7 +28,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::post('/weddings', [WeddingController::class, 'store'])->name('weddings.store');
@@ -53,9 +54,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('weddings/{wedding}/vendors', VendorController::class)->names('weddings.vendors');
     Route::resource('weddings/{wedding}/tables', TableController::class)->names('weddings.tables');
     Route::resource('weddings/{wedding}/guests', GuestController::class)->names('weddings.guests');
-    Route::get('weddings/{wedding}/guests/export/pdf', [GuestController::class, 'export'])->name('weddings.guests.export.pdf');
+    Route::get('weddings/{wedding}/guests/export/pdf', [GuestController::class, 'export'])->name('weddings.guests.export.pdf')->middleware('throttle:exports');
 
-    Route::post('weddings/{wedding}/expenses/{expense}/receipts', [ReceiptController::class, 'store'])->name('weddings.expenses.receipts.store');
+    Route::post('weddings/{wedding}/expenses/{expense}/receipts', [ReceiptController::class, 'store'])->name('weddings.expenses.receipts.store')->middleware('throttle:uploads');
     Route::delete('weddings/{wedding}/receipts/{receipt}', [ReceiptController::class, 'destroy'])->name('weddings.receipts.destroy');
 
     Route::post('weddings/{wedding}/expenses/{expense}/split', [ExpenseSplitController::class, 'store'])->name('weddings.expenses.split.store');
@@ -63,23 +64,8 @@ Route::middleware('auth')->group(function () {
 
     // Auto-redirects for legacy / direct navigation (/categories, /expenses, etc.)
     foreach (['categories', 'expenses', 'vendors', 'tables', 'guests'] as $resource) {
-        Route::get("/{$resource}", function (Request $request) use ($resource) {
-            $user = $request->user();
-            $wedding = $user->weddings()->first()
-                ?? $user->weddingMemberships()->with('wedding')->first()?->wedding
-                ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($user, 'Mi Boda');
-
-            return redirect()->route("weddings.{$resource}.index", $wedding);
-        });
-
-        Route::get("/{$resource}/create", function (Request $request) use ($resource) {
-            $user = $request->user();
-            $wedding = $user->weddings()->first()
-                ?? $user->weddingMemberships()->with('wedding')->first()?->wedding
-                ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($user, 'Mi Boda');
-
-            return redirect()->route("weddings.{$resource}.create", $wedding);
-        });
+        Route::get("/{$resource}", [LegacyRedirectController::class, 'index'])->defaults('resource', $resource);
+        Route::get("/{$resource}/create", [LegacyRedirectController::class, 'create'])->defaults('resource', $resource);
     }
 });
 

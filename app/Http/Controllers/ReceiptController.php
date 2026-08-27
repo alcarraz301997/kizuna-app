@@ -28,9 +28,9 @@ class ReceiptController extends Controller
         }
 
         $validated = $request->validate([
-            'receipt' => ['required', 'file', 'mimes:jpeg,png,gif,webp,pdf', 'max:10240'],
+            'receipt' => ['required', 'file', 'mimetypes:image/jpeg,image/png,image/gif,image/webp,application/pdf', 'max:10240'],
         ], [
-            'receipt.mimes' => 'El archivo debe ser una imagen (JPEG, PNG, GIF, WebP) o PDF.',
+            'receipt.mimetypes' => 'El archivo debe ser una imagen (JPEG, PNG, GIF, WebP) o PDF.',
             'receipt.max' => 'El archivo excede 10 MB.',
         ]);
 
