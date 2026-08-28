@@ -35,16 +35,14 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'wedding' => function () use ($request) {
-                $user = $request->user();
-                if (! $user) {
-                    return null;
-                }
-
-                $wedding = $user->weddings()->first()
-                    ?? $user->weddingMemberships()->with('wedding:id,name')->first()?->wedding
-                    ?? app(\App\Services\WeddingMembershipService::class)->createForOwner($user, 'Mi Boda');
+                $context = app(\App\Services\WeddingContext::class);
+                $wedding = $context->current($request);
 
                 return $wedding ? ['id' => $wedding->id, 'name' => $wedding->name] : null;
+            },
+            'available_weddings' => function () use ($request) {
+                $context = app(\App\Services\WeddingContext::class);
+                return $context->getAvailableWeddings($request);
             },
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),

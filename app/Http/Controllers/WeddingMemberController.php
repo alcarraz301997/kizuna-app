@@ -11,7 +11,8 @@ class WeddingMemberController extends Controller
 {
     public function store(AddWeddingMemberRequest $request, Wedding $wedding, WeddingMembershipService $service): RedirectResponse
     {
-        $service->addMember($wedding, (int) $request->validated('user_id'), $request->validated('role'));
+        $target = $request->validated('email') ?? $request->validated('user_id');
+        $service->addMember($wedding, $target, $request->validated('role'));
 
         return redirect()->route('weddings.show', $wedding);
     }

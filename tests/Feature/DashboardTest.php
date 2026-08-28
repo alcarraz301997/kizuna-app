@@ -13,11 +13,18 @@ class DashboardTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private \App\Models\Wedding $wedding;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->user = User::factory()->create();
+        $this->wedding = \App\Models\Wedding::factory()->create(['owner_id' => $this->user->id]);
+        \App\Models\WeddingMember::factory()->create([
+            'wedding_id' => $this->wedding->id,
+            'user_id' => $this->user->id,
+            'role' => 'owner',
+        ]);
     }
 
     public function test_dashboard_page_is_displayed(): void
@@ -43,12 +50,14 @@ class DashboardTest extends TestCase
     {
         $category = Category::factory()->create([
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'budget_limit' => 10000,
         ]);
 
         Expense::factory()->create([
             'category_id' => $category->id,
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'amount' => 4000,
             'status' => 'paid',
         ]);
@@ -56,6 +65,7 @@ class DashboardTest extends TestCase
         Expense::factory()->create([
             'category_id' => $category->id,
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'amount' => 1000,
             'status' => 'contracted',
         ]);
@@ -63,6 +73,7 @@ class DashboardTest extends TestCase
         Expense::factory()->create([
             'category_id' => $category->id,
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'amount' => 500,
             'status' => 'planned',
         ]);
@@ -84,6 +95,7 @@ class DashboardTest extends TestCase
     {
         $category = Category::factory()->create([
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'name' => 'Flowers',
             'budget_limit' => 1000,
         ]);
@@ -91,6 +103,7 @@ class DashboardTest extends TestCase
         Expense::factory()->create([
             'category_id' => $category->id,
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'amount' => 400,
             'status' => 'paid',
         ]);
@@ -114,6 +127,7 @@ class DashboardTest extends TestCase
     {
         $category = Category::factory()->create([
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'name' => 'Venue',
             'budget_limit' => 5000,
         ]);
@@ -121,6 +135,7 @@ class DashboardTest extends TestCase
         Expense::factory()->create([
             'category_id' => $category->id,
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'amount' => 6000,
             'status' => 'paid',
         ]);
@@ -144,9 +159,10 @@ class DashboardTest extends TestCase
     public function test_dashboard_only_shows_user_categories(): void
     {
         $otherUser = User::factory()->create();
+        $otherWedding = \App\Models\Wedding::factory()->create(['owner_id' => $otherUser->id]);
 
-        Category::factory()->count(2)->create(['user_id' => $this->user->id]);
-        Category::factory()->count(3)->create(['user_id' => $otherUser->id]);
+        Category::factory()->count(2)->create(['user_id' => $this->user->id, 'wedding_id' => $this->wedding->id]);
+        Category::factory()->count(3)->create(['user_id' => $otherUser->id, 'wedding_id' => $otherWedding->id]);
 
         $response = $this
             ->actingAs($this->user)
@@ -161,19 +177,21 @@ class DashboardTest extends TestCase
     {
         $category = Category::factory()->create([
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'budget_limit' => 10000,
         ]);
 
         Expense::factory()->create([
             'category_id' => $category->id,
             'user_id' => $this->user->id,
+            'wedding_id' => $this->wedding->id,
             'amount' => 5000,
             'status' => 'paid',
         ]);
 
         // Add another contracted expense
         $this->actingAs($this->user)
-            ->post('/expenses', [
+            ->post("/weddings/{$this->wedding->id}/expenses", [
                 'category_id' => $category->id,
                 'amount' => 1000,
                 'status' => 'contracted',

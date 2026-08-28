@@ -19,12 +19,18 @@ class WeddingMembershipService
         });
     }
 
-    public function addMember(Wedding $wedding, int $userId, string $role): WeddingMember
+    public function addMember(Wedding $wedding, int|User|string $userOrIdOrEmail, string $role): WeddingMember
     {
-        return DB::transaction(fn (): WeddingMember => $wedding->members()->create([
-            'user_id' => $userId,
-            'role' => $role,
-        ]));
+        $userId = match (true) {
+            $userOrIdOrEmail instanceof User => $userOrIdOrEmail->id,
+            is_numeric($userOrIdOrEmail) => (int) $userOrIdOrEmail,
+            is_string($userOrIdOrEmail) => User::where('email', $userOrIdOrEmail)->firstOrFail()->id,
+        };
+
+        return DB::transaction(fn (): WeddingMember => $wedding->members()->firstOrCreate(
+            ['user_id' => $userId],
+            ['role' => $role]
+        ));
     }
 
     public function backfillLegacyRecords(): void

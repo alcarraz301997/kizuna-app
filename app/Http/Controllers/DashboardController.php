@@ -12,9 +12,25 @@ class DashboardController extends Controller
     /**
      * Show the budget dashboard with aggregated totals.
      */
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, \App\Services\WeddingContext $context): Response
     {
-        $categories = $request->user()->categories()
+        $wedding = $context->current($request);
+
+        if (! $wedding) {
+            return Inertia::render('Dashboard', [
+                'categories' => [],
+                'totals' => [
+                    'total_budget' => 0,
+                    'total_spent' => 0,
+                    'total_planned' => 0,
+                    'total_contracted' => 0,
+                    'total_paid' => 0,
+                    'total_remaining' => 0,
+                ],
+            ]);
+        }
+
+        $categories = $wedding->categories()
             ->with('expenses.payments')
             ->orderBy('name')
             ->get();

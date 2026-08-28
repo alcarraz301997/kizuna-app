@@ -32,6 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::post('/weddings', [WeddingController::class, 'store'])->name('weddings.store');
+    Route::post('/weddings/{wedding}/switch', function (\Illuminate\Http\Request $request, \App\Models\Wedding $wedding, \App\Services\WeddingContext $context) {
+        $context->setActive($request, $wedding);
+        return redirect()->back();
+    })->name('weddings.switch');
     Route::get('/weddings/{wedding}', [WeddingController::class, 'show'])->name('weddings.show');
     Route::post('/weddings/{wedding}/members', [WeddingMemberController::class, 'store'])->name('weddings.members.store');
     Route::get('/weddings/{wedding}/category-templates', [CategoryTemplateController::class, 'index'])->name('weddings.category-templates.index');

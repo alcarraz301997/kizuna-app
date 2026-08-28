@@ -25,6 +25,7 @@ class CategoryFactory extends Factory
             'budget_limit' => fake()->randomFloat(2, 100, 10000),
             'color' => '#' . fake()->regexify('[0-9a-f]{6}'),
             'user_id' => User::factory(),
+            'wedding_id' => null,
         ];
     }
 }

@@ -102,4 +102,44 @@ class WeddingWorkspaceTest extends TestCase
         $this->assertDatabaseCount('expense_payments', 1);
         $this->assertDatabaseHas('expense_payments', ['expense_id' => $expense->id, 'amount' => 1250, 'kind' => 'payment', 'origin' => 'legacy_paid']);
     }
+
+    public function test_two_users_sharing_workspace_see_each_others_categories_and_expenses_in_dashboard(): void
+    {
+        $owner = User::factory()->create();
+        $collaborator = User::factory()->create();
+
+        $wedding = Wedding::factory()->create(['owner_id' => $owner->id, 'name' => 'Boda Compartida']);
+        WeddingMember::factory()->create(['wedding_id' => $wedding->id, 'user_id' => $owner->id, 'role' => 'owner']);
+        WeddingMember::factory()->create(['wedding_id' => $wedding->id, 'user_id' => $collaborator->id, 'role' => 'editor']);
+
+        // Owner creates a category and an expense
+        $category = Category::factory()->create([
+            'wedding_id' => $wedding->id,
+            'user_id' => $owner->id,
+            'name' => 'Fotografía',
+            'budget_limit' => 3000,
+        ]);
+
+        Expense::factory()->create([
+            'wedding_id' => $wedding->id,
+            'category_id' => $category->id,
+            'user_id' => $owner->id,
+            'amount' => 1500,
+            'status' => 'paid',
+        ]);
+
+        // Collaborator logs in and views Dashboard
+        $response = $this->actingAs($collaborator)->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertInertia(
+            fn ($page) => $page
+                ->has('categories', 1)
+                ->where('categories.0.name', 'Fotografía')
+                ->where('categories.0.spent', 1500)
+                ->where('totals.total_budget', 3000)
+                ->where('totals.total_spent', 1500)
+                ->where('totals.total_remaining', 1500)
+        );
+    }
 }

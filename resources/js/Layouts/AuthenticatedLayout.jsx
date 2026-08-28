@@ -8,7 +8,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const { auth, wedding } = usePage().props;
+    const { auth, wedding, available_weddings } = usePage().props;
     const user = auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -106,6 +106,33 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
+                                        <div className="block px-4 py-2 text-xs text-gray-400">
+                                            Espacios de Boda
+                                        </div>
+                                        {available_weddings && available_weddings.length > 0 ? (
+                                            available_weddings.map((w) => (
+                                                <Dropdown.Link
+                                                    key={w.id}
+                                                    href={route('weddings.switch', w.id)}
+                                                    method="post"
+                                                    as="button"
+                                                    className={`flex justify-between items-center ${wedding && wedding.id === w.id ? 'font-bold text-primary' : ''}`}
+                                                >
+                                                    <span>{w.name}</span>
+                                                    {wedding && wedding.id === w.id && (
+                                                        <span className="text-xs text-primary font-semibold">✓ Activo</span>
+                                                    )}
+                                                </Dropdown.Link>
+                                            ))
+                                        ) : (
+                                            <div className="px-4 py-1 text-xs text-gray-500">Sin espacios asignados</div>
+                                        )}
+                                        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                                        {wedding && (
+                                            <Dropdown.Link href={route('weddings.show', wedding.id)}>
+                                                Administrar Miembros
+                                            </Dropdown.Link>
+                                        )}
                                         <Dropdown.Link
                                             href={route('profile.edit')}
                                         >

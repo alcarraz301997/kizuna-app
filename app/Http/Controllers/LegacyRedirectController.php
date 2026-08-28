@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\WeddingMembershipService;
+use App\Services\WeddingContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class LegacyRedirectController extends Controller
 {
-    public function __construct(private readonly WeddingMembershipService $membershipService) {}
+    public function __construct(private readonly WeddingContext $weddingContext) {}
 
     /**
      * Redirect legacy flat resource URLs (e.g. /categories) to the wedding-scoped URL.
-     * If the user has no wedding, a default one is created automatically.
+     * If the user has no wedding, redirect to dashboard.
      */
     public function index(Request $request, string $resource): RedirectResponse
     {
-        $wedding = $this->resolveWedding($request);
+        $wedding = $this->weddingContext->current($request);
+
+        if (! $wedding) {
+            return redirect()->route('dashboard')->with('error', 'Crea o únete a un espacio de trabajo primero.');
+        }
 
         return redirect()->route("weddings.{$resource}.index", $wedding);
     }
@@ -26,20 +30,12 @@ class LegacyRedirectController extends Controller
      */
     public function create(Request $request, string $resource): RedirectResponse
     {
-        $wedding = $this->resolveWedding($request);
+        $wedding = $this->weddingContext->current($request);
+
+        if (! $wedding) {
+            return redirect()->route('dashboard')->with('error', 'Crea o únete a un espacio de trabajo primero.');
+        }
 
         return redirect()->route("weddings.{$resource}.create", $wedding);
-    }
-
-    /**
-     * Resolve the user's wedding: owned first, then membership, then create a new one.
-     */
-    private function resolveWedding(Request $request): \App\Models\Wedding
-    {
-        $user = $request->user();
-
-        return $user->weddings()->first()
-            ?? $user->weddingMemberships()->with('wedding')->first()?->wedding
-            ?? $this->membershipService->createForOwner($user, 'Mi Boda');
     }
 }
